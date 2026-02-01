@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Emanuel Payan</title>
-  <div class="nav-center">
-  <a href="burn.html">Burn</a>
-</div>
-
 
 <style>
   html, body {
@@ -17,16 +13,17 @@
     color: #fff;
     font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
     font-size: 15px;
-    .nav-center{
-  text-align:center;
-  margin: 12px 0 18px;
-}
-.nav-center a{
-  color:#fff;
-  text-decoration:none;
-  border-bottom:1px solid #fff;
-}
+  }
 
+  /* center burn link */
+  .nav-center{
+    text-align:center;
+    margin: 12px 0 18px;
+  }
+  .nav-center a{
+    color:#fff;
+    text-decoration:none;   /* no underline */
+    border-bottom:none;     /* no underline */
   }
 
   .wrap {
@@ -99,6 +96,11 @@
 
 <body>
 
+<!-- centered link (must be in body, not head) -->
+<div class="nav-center">
+  <a href="burn.html">Burn</a>
+</div>
+
 <div class="wrap">
 
   <!-- HEADER -->
@@ -137,7 +139,30 @@
 
 </div>
 
+<!-- footer mount -->
+<div id="site-footer"></div>
+
 <div id="fade" class="fadeout"></div>
+
+<!-- footer loader (exact script you provided) -->
+<script>
+  (function () {
+    var target = document.getElementById('site-footer');
+    if (!target) return;
+
+    fetch('/footer.html', { cache: 'no-cache' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Failed to load footer');
+        return res.text();
+      })
+      .then(function (html) {
+        target.innerHTML = html;
+      })
+      .catch(function (err) {
+        console.error('Footer load error:', err);
+      });
+  })();
+</script>
 
 <script>
 (() => {
@@ -360,3 +385,4 @@
 
 </body>
 </html>
+
