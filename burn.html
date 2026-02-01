@@ -267,6 +267,15 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
   }
 }
 
+
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: "bad_json", text };
+  }
+}
+
   }
 
   function enableUI(on){
