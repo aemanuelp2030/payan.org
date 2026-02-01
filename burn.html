@@ -15,7 +15,7 @@
     font-size:15px;
   }
   .wrap{ padding:20px; max-width:1200px; }
-  .title{ margin-bottom:10px; letter-spacing:.5px; }
+  .title{ margin-bottom:10px; letter-spacing:.5px; font-weight:normal; }
   .meta{ margin-bottom:14px; line-height:1.6; }
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
   .section{ margin:18px 0 8px; }
@@ -24,6 +24,8 @@
   .mono{ white-space:pre-wrap; line-height:1.6; }
   .blue{ color:#007BFF; }
   .muted{ opacity:.85; }
+  .bad{ color:#f33; }
+
   a{ color:#fff; text-decoration:none; }
 
   .input{
@@ -87,9 +89,6 @@
     overflow:auto;
   }
   .chart-title{ margin-bottom:8px; }
-  .pill{ display:inline-block; border:1px solid #fff; padding:2px 6px; }
-  .ok{ color:#0f0; }
-  .bad{ color:#f33; }
 </style>
 </head>
 
@@ -132,6 +131,7 @@ Daily Burn             : <span class="blue" id="daily">—</span>
 Weekly Burn            : <span class="blue" id="weekly">—</span>
 Burn / Year            : <span class="blue" id="yearly">—</span>
 Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
+Burn countdown         : <span class="blue" id="burnCountdown">—</span>
     </div>
   </div>
 
@@ -254,12 +254,11 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
 (() => {
   // Your Apps Script Web App /exec URL
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHUYAzQBNE5qQXOs07z7Gg_d78qZOb4WNCirHBeJOSSRcOMMx-NxWqHTTzTZOvFmjo3w/exec";
-
   const TOKEN_KEY = "emanuel_burn_token_session";
   const $ = (id) => document.getElementById(id);
 
-  const money = (n) => (isFinite(n) ? "$" + Number(n).toFixed(2) : "—");
   const num = (x) => (isFinite(+x) ? +x : 0);
+  const money = (n) => (isFinite(n) ? "$" + Number(n).toFixed(2) : "—");
   const pad2 = (x) => String(x).padStart(2,"0");
   const ymd = (d) => d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
   const fmt = (d) =>
@@ -276,7 +275,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
 
   function setSync(text){ $("sync").textContent = text; }
   function showErr(on){ $("err").style.display = on ? "" : "none"; }
-
   function token(){ return sessionStorage.getItem(TOKEN_KEY) || ""; }
 
   async function apiGet(action){
@@ -287,7 +285,7 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     catch { return { error:"bad_json", text }; }
   }
 
-  // CORS-safe POST: NO headers (preflight killer)
+  // CORS-safe POST: NO headers
   async function apiPost(action, payload){
     const res = await fetch(SCRIPT_URL, {
       method: "POST",
@@ -375,50 +373,32 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       .replace(/'/g,"&#039;");
   }
 
+  // FIXED: proper classes (.item/.note) so autosave works
   function renderTable(state){
-  const tbody = $("rows");
-  tbody.innerHTML = "";
+    const tbody = $("rows");
+    tbody.innerHTML = "";
 
-  state.rows.forEach((r, idx)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>
-        <input class="input small cat" data-idx="${idx}" value="${esc(r.cat||"")}">
-      </td>
-
-      <td>
-        <input class="input item" data-idx="${idx}" style="width:100%;" value="${esc(r.item||"")}">
-      </td>
-
-      <td class="num">
-        <input class="input small amt" data-idx="${idx}" value="${num(r.amount).toFixed(2)}">
-      </td>
-
-      <td>
-        <input class="input tiny due" data-idx="${idx}" placeholder="DD / MM-DD / EOM" value="${esc(r.due||"")}">
-      </td>
-
-      <td>
-        <input class="input note" data-idx="${idx}" style="width:100%;" value="${esc(r.notes||"")}">
-      </td>
-
-      <td class="center">
-        <select class="as" data-idx="${idx}">
-          <option value="you">YOU</option>
-          <option value="saul">SAUL</option>
-          <option value="ignore">-</option>
-        </select>
-      </td>
-
-      <td class="center">
-        <button class="btn del" data-idx="${idx}">X</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-    tr.querySelector("select.as").value = (r.as || "you");
-  });
-}
-
+    state.rows.forEach((r, idx)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input class="input small cat" data-idx="${idx}" value="${esc(r.cat||"")}"></td>
+        <td><input class="input item" data-idx="${idx}" style="width:100%;" value="${esc(r.item||"")}"></td>
+        <td class="num"><input class="input small amt" data-idx="${idx}" value="${num(r.amount).toFixed(2)}"></td>
+        <td><input class="input tiny due" data-idx="${idx}" placeholder="DD / MM-DD / EOM" value="${esc(r.due||"")}"></td>
+        <td><input class="input note" data-idx="${idx}" style="width:100%;" value="${esc(r.notes||"")}"></td>
+        <td class="center">
+          <select class="as" data-idx="${idx}">
+            <option value="you">YOU</option>
+            <option value="saul">SAUL</option>
+            <option value="ignore">-</option>
+          </select>
+        </td>
+        <td class="center"><button class="btn del" data-idx="${idx}">X</button></td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelector("select.as").value = (r.as || "you");
+    });
+  }
 
   function endOfMonthDate(d){
     const x = new Date(d.getFullYear(), d.getMonth()+1, 0);
@@ -491,6 +471,15 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     }).join("\n");
   }
 
+  function secondsToDHMS(sec){
+    if (!isFinite(sec) || sec < 0) return "—";
+    sec = Math.floor(sec);
+    const d = Math.floor(sec / 86400); sec %= 86400;
+    const h = Math.floor(sec / 3600);  sec %= 3600;
+    const m = Math.floor(sec / 60);    sec %= 60;
+    return `${d}d ${pad2(h)}:${pad2(m)}:${pad2(sec)}`;
+  }
+
   function calc(state){
     const includeSaul = state.includeSaul !== "no";
     let burnYou = 0, burnSaul = 0;
@@ -513,7 +502,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
 
     const netWorth = (state.assetLiquid + state.assetOther) - state.liabDebt;
 
-    // projections assume monthly change = leftMo (simple), and net worth tracks with cashflow
     const nw30  = netWorth + (leftMo/30.437)*30;
     const nw90  = netWorth + (leftMo/30.437)*90;
     const nw365 = netWorth + (leftMo/30.437)*365;
@@ -525,6 +513,7 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
 
   function renderCalc(state){
     const c = calc(state);
+
     $("burnTotal").textContent = money(c.burnTotal);
     $("leftMo").textContent    = money(c.leftMo);
     $("daily").textContent     = money(c.daily);
@@ -538,8 +527,51 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     $("nw90").textContent      = money(c.nw90);
     $("nw365").textContent     = money(c.nw365);
 
+    // burn countdown seconds (cashAfter / dailyBurn)
+    window.__burnCountdownSeconds = isFinite(c.runway1) ? Math.floor(c.runway1 * 86400) : Infinity;
+    $("burnCountdown").textContent = secondsToDHMS(window.__burnCountdownSeconds);
+
     renderDueList(state);
     return c;
+  }
+
+  function sparkSVG(series, width=900, height=160){
+    const vals = series.filter(v => v!=null && isFinite(v));
+    if (!vals.length) return `<span class="muted">—</span>`;
+
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const pad = 10;
+
+    const scaleX = (i) => pad + (i * (width - pad*2) / Math.max(1, series.length-1));
+    const scaleY = (v) => {
+      if (max === min) return height/2;
+      const t = (v - min) / (max - min);
+      return (height - pad) - t * (height - pad*2);
+    };
+
+    let pts = "";
+    series.forEach((v,i)=>{
+      if (v==null || !isFinite(v)) return;
+      pts += `${scaleX(i)},${scaleY(v)} `;
+    });
+
+    return `
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="${width}" height="${height}" fill="#000"/>
+  <rect x="0.5" y="0.5" width="${width-1}" height="${height-1}" fill="none" stroke="#fff"/>
+  <polyline fill="none" stroke="#007BFF" stroke-width="2" points="${pts.trim()}"/>
+  <text x="10" y="18" fill="#fff" font-size="12">${esc(money(max))}</text>
+  <text x="10" y="${height-10}" fill="#fff" font-size="12">${esc(money(min))}</text>
+</svg>`;
+  }
+
+  function renderCharts(daily){
+    const ordered = daily.slice().sort((a,b)=>String(a.ymd||"").localeCompare(String(b.ymd||"")));
+    const seriesNet  = ordered.map(x=>num(x.net));
+    const seriesCash = ordered.map(x=>num(x.cash));
+    $("chartNetWorth").innerHTML = sparkSVG(seriesNet);
+    $("chartCash").innerHTML = sparkSVG(seriesCash);
   }
 
   function renderSnapshots(rows){
@@ -551,7 +583,7 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     daily.slice(-30).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${esc(x.ymd || x.date || "")}</td>
+        <td>${esc(x.ymd || "")}</td>
         <td class="num">${money(num(x.burn))}</td>
         <td class="num">${money(num(x.income))}</td>
         <td class="num">${money(num(x.cash))}</td>
@@ -583,57 +615,12 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     const tbody = $("noteRows");
     tbody.innerHTML = "";
     rows.slice(-30).reverse().forEach(x=>{
-      const ts = x.ts || x.time || x.timestamp || "";
-      const note = x.note || x.notes || x.text || "";
+      const ts = x.ts || "";
+      const note = x.note || "";
       const tr = document.createElement("tr");
       tr.innerHTML = `<td>${esc(String(ts))}</td><td>${esc(String(note)).replace(/\n/g,"<br>")}</td>`;
       tbody.appendChild(tr);
     });
-  }
-
-  function sparkSVG(series, width=900, height=160){
-    // series: array of numbers (may include null)
-    const vals = series.filter(v => v!=null && isFinite(v));
-    if (!vals.length) return `<span class="muted">—</span>`;
-
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    const pad = 10;
-
-    const scaleX = (i) => pad + (i * (width - pad*2) / Math.max(1, series.length-1));
-    const scaleY = (v) => {
-      if (max === min) return height/2;
-      const t = (v - min) / (max - min);
-      return (height - pad) - t * (height - pad*2);
-    };
-
-    let pts = "";
-    series.forEach((v,i)=>{
-      if (v==null || !isFinite(v)) return;
-      pts += `${scaleX(i)},${scaleY(v)} `;
-    });
-
-    const labelMin = money(min);
-    const labelMax = money(max);
-
-    return `
-<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="chart">
-  <rect x="0" y="0" width="${width}" height="${height}" fill="#000"/>
-  <rect x="0.5" y="0.5" width="${width-1}" height="${height-1}" fill="none" stroke="#fff"/>
-  <polyline fill="none" stroke="#007BFF" stroke-width="2" points="${pts.trim()}"/>
-  <text x="10" y="18" fill="#fff" font-family="Chicago, Geneva, Monaco, 'Courier New', monospace" font-size="12">${esc(labelMax)}</text>
-  <text x="10" y="${height-10}" fill="#fff" font-family="Chicago, Geneva, Monaco, 'Courier New', monospace" font-size="12">${esc(labelMin)}</text>
-</svg>`;
-  }
-
-  function renderCharts(daily){
-    // sorted oldest->newest for chart
-    const ordered = daily.slice().sort((a,b)=>String(a.ymd||"").localeCompare(String(b.ymd||"")));
-    const seriesNet  = ordered.map(x=>num(x.net));
-    const seriesCash = ordered.map(x=>num(x.cash));
-
-    $("chartNetWorth").innerHTML = sparkSVG(seriesNet);
-    $("chartCash").innerHTML = sparkSVG(seriesCash);
   }
 
   async function pushState(state){
@@ -867,6 +854,15 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     if (empty) await pushState(state);
   }
 
+  // burn countdown tick (DD:HH:MM:SS)
+  setInterval(()=>{
+    const s = window.__burnCountdownSeconds;
+    if (s == null || !isFinite(s)) return;
+    window.__burnCountdownSeconds = Math.max(0, s - 1);
+    const el = $("burnCountdown");
+    if (el) el.textContent = secondsToDHMS(window.__burnCountdownSeconds);
+  }, 1000);
+
   // boot
   if (token()){
     $("loginBtn").style.display = "none";
@@ -877,3 +873,4 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
 </script>
 </body>
 </html>
+
