@@ -23,10 +23,7 @@
   .mono{ white-space:pre-wrap; line-height:1.6; }
   .blue{ color:#007BFF; }
 
-  a{
-    color:#fff;
-    text-decoration:none;
-  }
+  a{ color:#fff; text-decoration:none; }
 
   .input{
     background:#000;
@@ -105,6 +102,7 @@
   <div class="meta">
     <a href="index.html">Back</a><br>
     LAST UPDATED: <span class="blue" id="lastUpdated">—</span><br>
+    SYNC: <span class="blue" id="sync">CONNECTING…</span><br>
     INCLUDE SAUL IN BURN:
     <select id="includeSaul">
       <option value="yes">YES</option>
@@ -150,13 +148,12 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
   <div class="row" style="margin-bottom:10px;">
     <button class="btn" id="snapDaily">DAILY</button>
     <button class="btn" id="snapWeekly">WEEKLY</button>
-    <button class="btn" id="clearSnaps">CLEAR</button>
-    <span class="muted">Auto daily: 1 per day when you open the page.</span>
+    <span class="muted">Saved to Google Sheets.</span>
   </div>
 
   <div class="grid">
     <div class="block">
-      <div class="muted" style="margin-bottom:6px;">DAILY (30)</div>
+      <div class="muted" style="margin-bottom:6px;">DAILY</div>
       <table>
         <thead>
           <tr>
@@ -172,7 +169,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     </div>
 
     <div class="block">
-      <div class="muted" style="margin-bottom:6px;">WEEKLY (26)</div>
+      <div class="muted" style="margin-bottom:6px;">WEEKLY</div>
       <table>
         <thead>
           <tr>
@@ -188,18 +185,14 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     </div>
   </div>
 
-  <div class="section">Trajectory</div>
-  <pre class="mono" id="traj">—</pre>
-
   <div class="section">Notes</div>
   <div class="row" style="margin-bottom:10px;">
-    <button class="btn" id="saveNote">SAVE</button>
-    <button class="btn" id="clearNotes">CLEAR</button>
-    <span class="muted">Textbox saves automatically.</span>
+    <button class="btn" id="saveNote">SAVE NOTE</button>
+    <span class="muted">Saved to Google Sheets.</span>
   </div>
   <textarea rows="6" id="notes"></textarea>
 
-  <div class="section">Note History (20)</div>
+  <div class="section">Note History</div>
   <table>
     <thead>
       <tr>
@@ -213,20 +206,19 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
 <script>
 (() => {
-  const KEY = "emanuel_burn_state_v1";
-  const NOTES_KEY = "emanuel_burn_notes_v1";
-  const NOTE_HISTORY_KEY = "emanuel_burn_note_history_v1";
-  const SNAP_KEY = "emanuel_burn_snapshots_v1";
+  // 1) PASTE your Apps Script web app URL here:
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzs8ZqaqXqXm3fkZs8jfJ6vogCTTK0e9I7d2ebdZtgB-EyC-muj7ffvLYSZRDIeRn_9ig/exec";
+
+  // Token is NOT hardcoded. It’s asked once per session.
+  const TOKEN_KEY = "emanuel_burn_token_session";
 
   const $ = (id) => document.getElementById(id);
   const money = (n) => (isFinite(n) ? "$" + n.toFixed(2) : "—");
+  const pad2 = (x) => String(x).padStart(2,"0");
+  const ymd = (d) => d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+  const fmt = (d) => d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+
+    " "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());
 
-  function pad2(x){ return String(x).padStart(2,"0"); }
-  function ymd(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
-  function fmt(d){
-    return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+
-      " "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());
-  }
   function weekStartISO(d){
     const x = new Date(d);
     const day = (x.getDay()+6)%7; // Mon=0
@@ -235,108 +227,107 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     return ymd(x);
   }
 
+  async function apiGet(action){
+    const token = sessionStorage.getItem(TOKEN_KEY) || "";
+    const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token)}`;
+    const res = await fetch(url, { cache: "no-cache" });
+    return await res.json();
+  }
+
+  async function apiPost(action, payload){
+    const token = sessionStorage.getItem(TOKEN_KEY) || "";
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, token, ...payload })
+    });
+    return await res.json();
+  }
+
+  function ensureToken(){
+    let t = sessionStorage.getItem(TOKEN_KEY);
+    if (t) return t;
+    t = prompt("Burn passphrase:");
+    if (!t) return "";
+    sessionStorage.setItem(TOKEN_KEY, t);
+    return t;
+  }
+
+  // Minimal default (only used if sheet is empty)
   const DEFAULT = {
     includeSaul: "yes",
-    inputs: { avgIncome: 3464.00, inflow: 3000.00, cash: 2578.89 },
+    avgIncome: 3464.00,
+    inflow: 3000.00,
+    cash: 2578.89,
     rows: [
-      {cat:"LIVING", item:"Housing - Rent", amount:800.00, due:"01", notes:"Due 1st", countsAs:"you"},
-      {cat:"LIVING", item:"Internet", amount:20.00, due:"", notes:"Monthly", countsAs:"you"},
-      {cat:"LIVING", item:"Food", amount:650.00, due:"", notes:"Monthly", countsAs:"you"},
-
-      {cat:"TRANSPORT", item:"Gas", amount:250.00, due:"", notes:"Monthly", countsAs:"you"},
-      {cat:"TRANSPORT", item:"Car Payment #1", amount:369.89, due:"11", notes:"Due 11th", countsAs:"you"},
-      {cat:"TRANSPORT", item:"Car Payment #2", amount:285.98, due:"17", notes:"Due 17th", countsAs:"you"},
-
-      {cat:"FAMILY", item:"Discover (Saul)", amount:50.00, due:"10", notes:"Due 10th", countsAs:"saul"},
-      {cat:"FAMILY", item:"Capital One (Saul)", amount:75.00, due:"22", notes:"Due 22nd", countsAs:"saul"},
-      {cat:"FAMILY", item:"Apple Card (Saul)", amount:257.16, due:"EOM", notes:"End of month", countsAs:"saul"}
+      {cat:"LIVING", item:"Housing - Rent", amount:800.00, due:"01", notes:"Due 1st", as:"you"},
+      {cat:"LIVING", item:"Internet", amount:20.00, due:"", notes:"Monthly", as:"you"},
+      {cat:"LIVING", item:"Food", amount:650.00, due:"", notes:"Monthly", as:"you"},
+      {cat:"TRANSPORT", item:"Gas", amount:250.00, due:"", notes:"Monthly", as:"you"},
+      {cat:"TRANSPORT", item:"Car Payment #1", amount:369.89, due:"11", notes:"Due 11th", as:"you"},
+      {cat:"TRANSPORT", item:"Car Payment #2", amount:285.98, due:"17", notes:"Due 17th", as:"you"},
+      {cat:"FAMILY", item:"Discover (Saul)", amount:50.00, due:"10", notes:"Due 10th", as:"saul"},
+      {cat:"FAMILY", item:"Capital One (Saul)", amount:75.00, due:"22", notes:"Due 22nd", as:"saul"},
+      {cat:"FAMILY", item:"Apple Card (Saul)", amount:257.16, due:"EOM", notes:"End of month", as:"saul"}
     ],
-    lastUpdatedISO: null
+    notes: ""
   };
 
-  function clone(x){ return JSON.parse(JSON.stringify(x)); }
+  function parseStateFromSheet(sheetState){
+    // sheetState is a map key->value stored in the "state" tab
+    // store JSON blobs in a couple keys to keep it simple
+    const out = {};
+    out.includeSaul = (sheetState.includeSaul || DEFAULT.includeSaul);
+    out.avgIncome = +(sheetState.avgIncome ?? DEFAULT.avgIncome);
+    out.inflow = +(sheetState.inflow ?? DEFAULT.inflow);
+    out.cash = +(sheetState.cash ?? DEFAULT.cash);
 
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(KEY);
-      if(!raw) return clone(DEFAULT);
-      const s = JSON.parse(raw);
-      return {
-        includeSaul: (s.includeSaul === "no" ? "no" : "yes"),
-        inputs: {...DEFAULT.inputs, ...(s.inputs||{})},
-        rows: Array.isArray(s.rows) ? s.rows : clone(DEFAULT.rows),
-        lastUpdatedISO: s.lastUpdatedISO || null
-      };
-    }catch{
-      return clone(DEFAULT);
-    }
+    try { out.rows = JSON.parse(sheetState.rowsJson || "null") || DEFAULT.rows; }
+    catch { out.rows = DEFAULT.rows; }
+
+    out.notes = String(sheetState.notes || DEFAULT.notes);
+    out.updatedAt = sheetState.updatedAt || "";
+    return out;
   }
-  function saveState(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
-  function markUpdated(state){
-    state.lastUpdatedISO = new Date().toISOString();
-    $("lastUpdated").textContent = fmt(new Date(state.lastUpdatedISO));
-  }
-  function setLastUpdated(state){
-    if(state.lastUpdatedISO){
-      const d = new Date(state.lastUpdatedISO);
-      $("lastUpdated").textContent = isNaN(d.getTime()) ? "—" : fmt(d);
-    } else $("lastUpdated").textContent = "—";
+
+  function buildStateForSheet(state){
+    return {
+      includeSaul: state.includeSaul,
+      avgIncome: String(state.avgIncome),
+      inflow: String(state.inflow),
+      cash: String(state.cash),
+      rowsJson: JSON.stringify(state.rows),
+      notes: state.notes,
+      updatedAt: new Date().toISOString()
+    };
   }
 
   function renderTable(state){
     const tbody = $("rows");
     tbody.innerHTML = "";
 
-    state.rows.forEach((r, idx) => {
+    state.rows.forEach((r, idx)=>{
       const tr = document.createElement("tr");
 
-      const tdCat = document.createElement("td");
-      tdCat.textContent = r.cat;
-
-      const tdItem = document.createElement("td");
-      tdItem.textContent = r.item;
-
-      const tdAmt = document.createElement("td");
-      tdAmt.className = "num";
-      const amt = document.createElement("input");
-      amt.className = "input small amt";
-      amt.value = (r.amount ?? 0);
-      amt.dataset.idx = String(idx);
-      tdAmt.appendChild(amt);
-
-      const tdDue = document.createElement("td");
-      const due = document.createElement("input");
-      due.className = "input small due";
-      due.placeholder = "DD / MM-DD / EOM";
-      due.value = (r.due ?? "");
-      due.dataset.idx = String(idx);
-      tdDue.appendChild(due);
-
-      const tdNotes = document.createElement("td");
-      tdNotes.className = "notes";
-      tdNotes.textContent = r.notes || "";
-
-      const tdWho = document.createElement("td");
-      const sel = document.createElement("select");
-      sel.dataset.idx = String(idx);
-      [
-        ["you","YOU"],
-        ["saul","SAUL"],
-        ["ignore","-"]
-      ].forEach(([v, label])=>{
-        const o = document.createElement("option");
-        o.value = v; o.textContent = label;
-        if((r.countsAs||"you") === v) o.selected = true;
-        sel.appendChild(o);
-      });
-      tdWho.appendChild(sel);
-
-      tr.append(tdCat, tdItem, tdAmt, tdDue, tdNotes, tdWho);
+      tr.innerHTML = `
+        <td>${r.cat}</td>
+        <td>${r.item}</td>
+        <td class="num"><input class="input small amt" data-idx="${idx}" value="${Number(r.amount||0)}"></td>
+        <td><input class="input small due" data-idx="${idx}" placeholder="DD / MM-DD / EOM" value="${r.due||""}"></td>
+        <td class="notes">${r.notes||""}</td>
+        <td>
+          <select data-idx="${idx}" class="as">
+            <option value="you">YOU</option>
+            <option value="saul">SAUL</option>
+            <option value="ignore">-</option>
+          </select>
+        </td>
+      `;
       tbody.appendChild(tr);
+      tr.querySelector("select.as").value = (r.as || "you");
     });
   }
 
-  // ===== Due list =====
   function endOfMonthDate(d){
     const x = new Date(d.getFullYear(), d.getMonth()+1, 0);
     x.setHours(0,0,0,0);
@@ -347,16 +338,12 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     const s = String(dueStr || "").trim();
     if (!s) return null;
 
-    // YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)){
       const dt = new Date(s + "T00:00:00");
       return isNaN(dt.getTime()) ? null : dt;
     }
-    // EOM
-    if (s.toUpperCase() === "EOM"){
-      return endOfMonthDate(now);
-    }
-    // MM-DD
+    if (s.toUpperCase() === "EOM") return endOfMonthDate(now);
+
     if (/^\d{2}-\d{2}$/.test(s)){
       const [mm, dd] = s.split("-").map(Number);
       if (!mm || !dd) return null;
@@ -369,7 +356,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       }
       return dt;
     }
-    // DD
+
     if (/^\d{1,2}$/.test(s)){
       const dd = Number(s);
       if (!dd) return null;
@@ -392,147 +379,85 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     const horizon = new Date(today0);
     horizon.setDate(horizon.getDate() + 14);
 
-    const includeSaul = $("includeSaul").value !== "no";
+    const includeSaul = state.includeSaul !== "no";
 
     const upcoming = state.rows
       .map(r => ({ r, dueDate: parseDueToDate(r.due, now) }))
       .filter(x => x.dueDate && x.dueDate >= today0 && x.dueDate <= horizon)
-      .filter(x => includeSaul ? true : x.r.countsAs !== "saul")
-      .filter(x => x.r.countsAs !== "ignore")
-      .sort((a,b) => a.dueDate - b.dueDate);
+      .filter(x => includeSaul ? true : x.r.as !== "saul")
+      .filter(x => x.r.as !== "ignore")
+      .sort((a,b)=>a.dueDate-b.dueDate);
 
-    if (!upcoming.length){
-      el.textContent = "—";
-      return;
-    }
+    if (!upcoming.length){ el.textContent = "—"; return; }
 
-    el.textContent = upcoming.map(x => {
+    el.textContent = upcoming.map(x=>{
       const d = x.dueDate;
       const ds = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-      const who = x.r.countsAs === "saul" ? "SAUL" : "YOU";
+      const who = x.r.as === "saul" ? "SAUL" : "YOU";
       return `${ds}  ${money(+x.r.amount||0)}  ${who}  ${x.r.item}`;
     }).join("\n");
   }
 
-  // ===== Snapshots =====
-  function loadSnaps(){
-    try{
-      return JSON.parse(localStorage.getItem(SNAP_KEY) || '{"daily":[],"weekly":[],"lastDailyYMD":null}');
-    }catch{
-      return {daily:[], weekly:[], lastDailyYMD:null};
-    }
-  }
-  function saveSnaps(s){ localStorage.setItem(SNAP_KEY, JSON.stringify(s)); }
+  function calcAndRender(state){
+    const includeSaul = state.includeSaul !== "no";
+    let burnYou = 0, burnSaul = 0;
 
-  function snapshotPayload(calcOut){
-    return {
-      ts: new Date().toISOString(),
-      ymd: ymd(new Date()),
-      week: weekStartISO(new Date()),
-      burn: calcOut.burnTotal,
-      income: calcOut.incomeMo,
-      cash: calcOut.cashAfter,
-      runway: calcOut.runwayAfter,
-      includeSaul: calcOut.includeSaul
-    };
-  }
+    state.rows.forEach(r=>{
+      const a = (+r.amount||0);
+      if (r.as === "you") burnYou += a;
+      else if (r.as === "saul") burnSaul += a;
+    });
 
-  function addDailySnapshot(calcOut){
-    const s = loadSnaps();
-    const today = ymd(new Date());
-    s.daily.unshift(snapshotPayload(calcOut));
-    s.daily = s.daily.slice(0,30);
-    s.lastDailyYMD = today;
-    saveSnaps(s);
-    renderSnapshots();
+    const burnTotal = burnYou + (includeSaul ? burnSaul : 0);
+    const leftMo = state.avgIncome - burnTotal;
+    const daily = burnTotal / 30.437;
+
+    const cashAfter = state.cash + state.inflow;
+    const runway1 = daily > 0 ? (cashAfter / daily) : Infinity;
+
+    $("burnTotal").textContent = money(burnTotal);
+    $("leftMo").textContent = money(leftMo);
+    $("daily").textContent = money(daily);
+    $("runway1").textContent = isFinite(runway1) ? runway1.toFixed(0) : "∞";
+
+    renderDueList(state);
+
+    return { burnTotal, cashAfter, runway1 };
   }
 
-  function addWeeklySnapshot(calcOut){
-    const s = loadSnaps();
-    s.weekly.unshift(snapshotPayload(calcOut));
-    s.weekly = s.weekly.slice(0,26);
-    saveSnaps(s);
-    renderSnapshots();
-  }
+  function renderSnapshots(rows){
+    const daily = rows.filter(r=>String(r.type||"").toLowerCase()==="daily");
+    const weekly = rows.filter(r=>String(r.type||"").toLowerCase()==="weekly");
 
-  function autoDailySnapshot(calcOut){
-    const s = loadSnaps();
-    const today = ymd(new Date());
-    if (s.lastDailyYMD !== today){
-      addDailySnapshot(calcOut);
-    }
-  }
-
-  function renderSnapshots(){
-    const s = loadSnaps();
-
-    const dailyT = $("dailyRows");
-    dailyT.innerHTML = "";
-    s.daily.forEach(x=>{
+    const dT = $("dailyRows");
+    dT.innerHTML = "";
+    daily.slice().reverse().slice(-30).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${x.ymd}</td>
+        <td>${x.ymd || ""}</td>
         <td class="num">${money(+x.burn||0)}</td>
         <td class="num">${money(+x.income||0)}</td>
         <td class="num">${money(+x.cash||0)}</td>
-        <td class="num">${isFinite(x.runway)? (+x.runway).toFixed(0) : "∞"}</td>
+        <td class="num">${isFinite(+x.runway) ? (+x.runway).toFixed(0) : "∞"}</td>
       `;
-      dailyT.appendChild(tr);
+      dT.appendChild(tr);
     });
 
-    const weeklyT = $("weeklyRows");
-    weeklyT.innerHTML = "";
-    s.weekly.forEach(x=>{
+    const wT = $("weeklyRows");
+    wT.innerHTML = "";
+    weekly.slice().reverse().slice(-26).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${x.week}</td>
+        <td>${x.week || ""}</td>
         <td class="num">${money(+x.burn||0)}</td>
         <td class="num">${money(+x.income||0)}</td>
         <td class="num">${money(+x.cash||0)}</td>
-        <td class="num">${isFinite(x.runway)? (+x.runway).toFixed(0) : "∞"}</td>
+        <td class="num">${isFinite(+x.runway) ? (+x.runway).toFixed(0) : "∞"}</td>
       `;
-      weeklyT.appendChild(tr);
+      wT.appendChild(tr);
     });
-
-    renderTrajectoryASCII(s);
   }
 
-  function bar(value, min, max, width){
-    if (!isFinite(value) || max <= min) return " ".repeat(width);
-    const t = (value - min) / (max - min);
-    const n = Math.max(0, Math.min(width, Math.round(t * width)));
-    return "█".repeat(n) + " ".repeat(width - n);
-  }
-
-  function renderTrajectoryASCII(s){
-    const daily = (s.daily || []).slice(0,14).reverse();
-    const burnVals = daily.map(x=>+x.burn).filter(isFinite);
-    const cashVals = daily.map(x=>+x.cash).filter(isFinite);
-    const burnMin = Math.min(...burnVals, 0), burnMax = Math.max(...burnVals, 1);
-    const cashMin = Math.min(...cashVals, 0), cashMax = Math.max(...cashVals, 1);
-
-    if (!daily.length){
-      $("traj").textContent = "—";
-      return;
-    }
-
-    let out = "DATE       BURN                    CASH\n";
-    daily.forEach(x=>{
-      const b = bar(+x.burn, burnMin, burnMax, 20);
-      const c = bar(+x.cash, cashMin, cashMax, 20);
-      out += `${x.ymd}  ${b}  ${c}\n`;
-    });
-    $("traj").textContent = out.trimEnd();
-  }
-
-  // ===== Notes =====
-  function loadNoteHistory(){
-    try{ return JSON.parse(localStorage.getItem(NOTE_HISTORY_KEY) || "[]"); }
-    catch{ return []; }
-  }
-  function saveNoteHistory(arr){
-    localStorage.setItem(NOTE_HISTORY_KEY, JSON.stringify(arr));
-  }
   function escapeHtml(s){
     return String(s)
       .replace(/&/g,"&amp;")
@@ -541,149 +466,168 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#039;");
   }
-  function renderNoteHistory(){
-    const arr = loadNoteHistory();
+
+  function renderNotes(rows){
     const tbody = $("noteRows");
     tbody.innerHTML = "";
-    arr.slice(0,20).forEach(x=>{
+    rows.slice().reverse().slice(-20).reverse().forEach(x=>{
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${x.ts}</td><td>${escapeHtml(x.text).replace(/\n/g,"<br>")}</td>`;
+      tr.innerHTML = `<td>${String(x.ts||"")}</td><td>${escapeHtml(String(x.note||"")).replace(/\n/g,"<br>")}</td>`;
       tbody.appendChild(tr);
     });
   }
 
-  // ===== Core calc =====
-  function calc(state){
-    const includeSaul = state.includeSaul === "yes";
+  async function loadAll(){
+    $("sync").textContent = "CONNECTING…";
+    const token = ensureToken();
+    if (!token){
+      $("sync").textContent = "NO TOKEN";
+      return null;
+    }
 
-    const avgIncome = +$("avgIncome").value || 0;
-    const inflow = +$("inflow").value || 0;
-    const cash = +$("cash").value || 0;
+    const data = await apiGet("getAll");
+    if (data.error){
+      $("sync").textContent = "UNAUTHORIZED";
+      return null;
+    }
+    $("sync").textContent = "CONNECTED";
+    return data;
+  }
 
-    // sync table inputs back into state
-    document.querySelectorAll("input.amt").forEach(inp=>{
-      const idx = +inp.dataset.idx;
-      state.rows[idx].amount = (+inp.value || 0);
-    });
-    document.querySelectorAll("input.due").forEach(inp=>{
-      const idx = +inp.dataset.idx;
-      state.rows[idx].due = String(inp.value || "").trim();
-    });
-    document.querySelectorAll("tbody#rows select").forEach(sel=>{
-      const idx = +sel.dataset.idx;
-      state.rows[idx].countsAs = sel.value;
-    });
+  async function pushState(state){
+    $("sync").textContent = "SAVING…";
+    const res = await apiPost("saveState", { state: buildStateForSheet(state) });
+    if (res && res.ok){
+      $("sync").textContent = "CONNECTED";
+      $("lastUpdated").textContent = fmt(new Date());
+    } else {
+      $("sync").textContent = "SAVE FAILED";
+    }
+  }
 
-    let burnYou = 0, burnSaul = 0;
-    state.rows.forEach(r=>{
-      const a = (+r.amount || 0);
-      if (r.countsAs === "you") burnYou += a;
-      else if (r.countsAs === "saul") burnSaul += a;
-    });
-
-    const burnTotal = burnYou + (includeSaul ? burnSaul : 0);
-    const leftMo = avgIncome - burnTotal;
-
-    const daily = burnTotal / 30.437;
-    const cashAfter = cash + inflow;
-    const runway1 = daily > 0 ? (cashAfter / daily) : Infinity;
-
-    // UI
-    $("burnTotal").textContent = money(burnTotal);
-    $("leftMo").textContent = money(leftMo);
-    $("daily").textContent = money(daily);
-    $("runway1").textContent = isFinite(runway1) ? runway1.toFixed(0) : "∞";
-
-    // persist inputs
-    state.inputs.avgIncome = avgIncome;
-    state.inputs.inflow = inflow;
-    state.inputs.cash = cash;
-
-    saveState(state);
-
-    return {
-      includeSaul,
-      incomeMo: avgIncome,
-      burnTotal,
-      cashAfter,
-      runwayAfter: runway1
+  async function addSnapshot(type, state, calcOut){
+    const snap = {
+      type,
+      ymd: ymd(new Date()),
+      week: weekStartISO(new Date()),
+      burn: calcOut.burnTotal,
+      income: state.avgIncome,
+      cash: state.cash + state.inflow,
+      runway: calcOut.runway1,
+      includeSaul: state.includeSaul
     };
+    $("sync").textContent = "SAVING…";
+    const res = await apiPost("addSnapshot", { snapshot: snap });
+    $("sync").textContent = (res && res.ok) ? "CONNECTED" : "SAVE FAILED";
   }
 
-  // ===== Boot =====
-  const state = loadState();
-
-  $("avgIncome").value = String(state.inputs.avgIncome ?? 0);
-  $("inflow").value = String(state.inputs.inflow ?? 0);
-  $("cash").value = String(state.inputs.cash ?? 0);
-
-  $("includeSaul").value = state.includeSaul || "yes";
-  setLastUpdated(state);
-
-  renderTable(state);
-
-  // Notes autosave
-  $("notes").value = localStorage.getItem(NOTES_KEY) || "";
-  $("notes").addEventListener("input", () => {
-    localStorage.setItem(NOTES_KEY, $("notes").value);
-  });
-
-  $("saveNote").addEventListener("click", () => {
-    const text = ($("notes").value || "").trim();
-    if (!text) return;
-    const arr = loadNoteHistory();
-    arr.unshift({ ts: fmt(new Date()), text });
-    saveNoteHistory(arr.slice(0,20));
-    renderNoteHistory();
-  });
-
-  $("clearNotes").addEventListener("click", () => {
-    localStorage.removeItem(NOTE_HISTORY_KEY);
-    renderNoteHistory();
-  });
-
-  renderNoteHistory();
-
-  function onAnyChange(){
-    markUpdated(state);
-    state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
-    const out = calc(state);
-    renderDueList(state);
-    renderSnapshots();
-    return out;
+  async function addNote(text){
+    $("sync").textContent = "SAVING…";
+    const res = await apiPost("addNote", { note: text });
+    $("sync").textContent = (res && res.ok) ? "CONNECTED" : "SAVE FAILED";
   }
 
-  // inputs
-  ["avgIncome","inflow","cash","includeSaul"].forEach(id=>{
-    $(id).addEventListener("input", onAnyChange);
-    $(id).addEventListener("change", onAnyChange);
-  });
+  // ===== MAIN =====
+  (async function boot(){
+    const data = await loadAll();
+    if (!data) return;
 
-  // table input events
-  $("rows").addEventListener("input", (e) => {
-    if (!e.target) return;
-    if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.tagName === "SELECT") onAnyChange();
-  });
-  $("rows").addEventListener("change", (e) => {
-    if (!e.target) return;
-    if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.tagName === "SELECT") onAnyChange();
-  });
+    // If sheet is empty, initialize once
+    const sheetStateObj = data.state || {};
+    const isEmpty = Object.keys(sheetStateObj).length === 0;
 
-  // initial
-  state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
-  const out0 = calc(state);
-  renderDueList(state);
-  renderSnapshots();
-  autoDailySnapshot(out0);
+    let state = parseStateFromSheet(sheetStateObj);
 
-  // snapshot buttons
-  $("snapDaily").addEventListener("click", () => addDailySnapshot(calc(state)));
-  $("snapWeekly").addEventListener("click", () => addWeeklySnapshot(calc(state)));
-  $("clearSnaps").addEventListener("click", () => {
-    localStorage.removeItem(SNAP_KEY);
-    renderSnapshots();
-  });
+    if (isEmpty){
+      state = {...DEFAULT};
+      await pushState(state);
+    }
 
+    // hydrate UI
+    $("includeSaul").value = (state.includeSaul === "no" ? "no" : "yes");
+    $("avgIncome").value = String(state.avgIncome);
+    $("inflow").value = String(state.inflow);
+    $("cash").value = String(state.cash);
+    $("notes").value = state.notes || "";
+
+    // last updated line
+    $("lastUpdated").textContent = state.updatedAt ? fmt(new Date(state.updatedAt)) : "—";
+
+    renderTable(state);
+    const calcOut = calcAndRender(state);
+    renderSnapshots(data.snapshots || []);
+    renderNotes(data.notes || []);
+
+    function pullInputsIntoState(){
+      state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
+      state.avgIncome = +$("avgIncome").value || 0;
+      state.inflow = +$("inflow").value || 0;
+      state.cash = +$("cash").value || 0;
+      state.notes = $("notes").value || "";
+
+      // table values
+      document.querySelectorAll("input.amt").forEach(inp=>{
+        const idx = +inp.dataset.idx;
+        state.rows[idx].amount = (+inp.value || 0);
+      });
+      document.querySelectorAll("input.due").forEach(inp=>{
+        const idx = +inp.dataset.idx;
+        state.rows[idx].due = String(inp.value || "").trim();
+      });
+      document.querySelectorAll("select.as").forEach(sel=>{
+        const idx = +sel.dataset.idx;
+        state.rows[idx].as = sel.value;
+      });
+    }
+
+    let saveTimer = null;
+    function scheduleSave(){
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(async ()=>{
+        pullInputsIntoState();
+        calcAndRender(state);
+        await pushState(state);
+      }, 450);
+    }
+
+    ["includeSaul","avgIncome","inflow","cash","notes"].forEach(id=>{
+      $(id).addEventListener("input", scheduleSave);
+      $(id).addEventListener("change", scheduleSave);
+    });
+
+    $("rows").addEventListener("input", (e)=>{
+      if (!e.target) return;
+      if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
+    });
+    $("rows").addEventListener("change", (e)=>{
+      if (!e.target) return;
+      if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
+    });
+
+    $("snapDaily").addEventListener("click", async ()=>{
+      pullInputsIntoState();
+      const c = calcAndRender(state);
+      await addSnapshot("daily", state, c);
+      const fresh = await loadAll();
+      if (fresh) renderSnapshots(fresh.snapshots || []);
+    });
+
+    $("snapWeekly").addEventListener("click", async ()=>{
+      pullInputsIntoState();
+      const c = calcAndRender(state);
+      await addSnapshot("weekly", state, c);
+      const fresh = await loadAll();
+      if (fresh) renderSnapshots(fresh.snapshots || []);
+    });
+
+    $("saveNote").addEventListener("click", async ()=>{
+      const text = ($("notes").value || "").trim();
+      if (!text) return;
+      await addNote(text);
+      const fresh = await loadAll();
+      if (fresh) renderNotes(fresh.notes || []);
+    });
+  })();
 })();
 </script>
 </body>
