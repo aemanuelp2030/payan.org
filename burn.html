@@ -89,11 +89,32 @@
     overflow:auto;
   }
   .chart-title{ margin-bottom:8px; }
+
+  /* blank page gate */
+  #app{ display:none; }
+  #gate{
+    padding:20px;
+    max-width:1200px;
+  }
+  #gate .title{ margin-bottom:12px; }
 </style>
 </head>
 
 <body>
-<div class="wrap">
+
+<!-- BLANK BEFORE LOGIN (only this shows) -->
+<div id="gate">
+  <div class="title">Emanuel Payan | Burn</div>
+  <div class="row">
+    <a href="index.html">Back</a>
+    <span class="muted">|</span>
+    <button class="btn" id="loginBtnGate">LOGIN</button>
+    <span class="muted" id="gateErr" style="display:none;">| <span class="bad">ERROR</span> (console)</span>
+  </div>
+</div>
+
+<!-- FULL APP (hidden until login) -->
+<div class="wrap" id="app">
   <div class="title">Emanuel Payan | Burn</div>
 
   <div class="meta">
@@ -102,8 +123,7 @@
       <span class="muted">|</span>
       SYNC: <span class="blue" id="sync">LOCKED</span>
       <span class="muted">|</span>
-      <button class="btn" id="loginBtn">LOGIN</button>
-      <button class="btn" id="logoutBtn" style="display:none;">LOGOUT</button>
+      <button class="btn" id="logoutBtn">LOGOUT</button>
       <span class="muted" id="err" style="display:none;">| <span class="bad">ERROR</span> (console)</span>
     </div>
 
@@ -247,7 +267,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     </thead>
     <tbody id="noteRows"></tbody>
   </table>
-
 </div>
 
 <script>
@@ -658,6 +677,9 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     }
   }
 
+  let state = null;
+  let saveTimer = null;
+
   function pullInputsIntoState(state){
     state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
     state.avgIncome   = num($("avgIncome").value);
@@ -695,9 +717,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       rows[i].as = sel.value;
     });
   }
-
-  let state = null;
-  let saveTimer = null;
 
   function scheduleSave(){
     if (!state) return;
@@ -809,22 +828,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       const fresh = await apiGet("getAll");
       if (!fresh.error) renderNotes(fresh.notes || []);
     });
-  }
-
-  // wire auth ALWAYS (so LOGIN works even when locked)
-  let authWired = false;
-  function wireAuth(){
-    if (authWired) return;
-    authWired = true;
-
-    $("loginBtn").addEventListener("click", async ()=>{
-      const pass = prompt("PASSCODE:");
-      if (!pass) return;
-      sessionStorage.setItem(TOKEN_KEY, pass);
-      $("loginBtn").style.display = "none";
-      $("logoutBtn").style.display = "";
-      await loadAll();
-    });
 
     $("logoutBtn").addEventListener("click", ()=>{
       sessionStorage.removeItem(TOKEN_KEY);
@@ -847,6 +850,10 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     setSync("CONNECTED");
     enableUI(true);
     wireOnce();
+
+    // reveal app only after successful auth
+    $("gate").style.display = "none";
+    $("app").style.display = "";
 
     const sheetStateObj = data.state || {};
     const empty = Object.keys(sheetStateObj).length === 0;
@@ -882,21 +889,22 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     if (el) el.textContent = secondsToDHMS(window.__burnCountdownSeconds);
   }, 1000);
 
-  // boot
-  wireAuth();
+  // LOGIN on gate (always available)
+  $("loginBtnGate").addEventListener("click", async ()=>{
+    const pass = prompt("PASSCODE:");
+    if (!pass) return;
+    sessionStorage.setItem(TOKEN_KEY, pass);
+    await loadAll();
+  });
 
+  // boot: if token exists, auto-load; otherwise stay blank
   if (token()){
-    $("loginBtn").style.display = "none";
-    $("logoutBtn").style.display = "";
     loadAll();
   } else {
-    $("loginBtn").style.display = "";
-    $("logoutBtn").style.display = "none";
-    setSync("LOCKED");
-    enableUI(false);
+    $("gate").style.display = "";
+    $("app").style.display = "none";
   }
 })();
 </script>
 </body>
 </html>
-
