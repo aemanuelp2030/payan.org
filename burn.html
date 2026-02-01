@@ -709,13 +709,12 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     }, 450);
   }
 
-  // ✅ FIXED wireOnce (this was breaking your entire script)
+  // wire main UI once (after authorized)
   let wired = false;
   function wireOnce(){
     if (wired) return;
     wired = true;
 
-    // Inputs that affect totals
     ["includeSaul","avgIncome","inflow","cash","assetLiquid","assetOther","liabDebt"].forEach(id=>{
       const el = $(id);
       if (!el) return;
@@ -733,7 +732,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       });
     });
 
-    // Row edits
     $("rows").addEventListener("input", ()=>{
       if (!state) return;
       pullInputsIntoState(state);
@@ -811,6 +809,13 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       const fresh = await apiGet("getAll");
       if (!fresh.error) renderNotes(fresh.notes || []);
     });
+  }
+
+  // wire auth ALWAYS (so LOGIN works even when locked)
+  let authWired = false;
+  function wireAuth(){
+    if (authWired) return;
+    authWired = true;
 
     $("loginBtn").addEventListener("click", async ()=>{
       const pass = prompt("PASSCODE:");
@@ -877,21 +882,21 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     if (el) el.textContent = secondsToDHMS(window.__burnCountdownSeconds);
   }, 1000);
 
-  // boot (always ask)
-if (token()){
-  $("loginBtn").style.display = "none";
-  $("logoutBtn").style.display = "";
-  loadAll();                 // only auto-load when token exists
-} else {
-  $("loginBtn").style.display = "";
-  $("logoutBtn").style.display = "none";
-  setSync("LOCKED");         // stay locked until user clicks LOGIN
-  enableUI(false);
-}
+  // boot
+  wireAuth();
 
+  if (token()){
+    $("loginBtn").style.display = "none";
+    $("logoutBtn").style.display = "";
+    loadAll();
+  } else {
+    $("loginBtn").style.display = "";
+    $("logoutBtn").style.display = "none";
+    setSync("LOCKED");
+    enableUI(false);
   }
-  loadAll();
 })();
 </script>
 </body>
 </html>
+
