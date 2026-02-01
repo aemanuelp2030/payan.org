@@ -90,20 +90,16 @@
   }
   .chart-title{ margin-bottom:8px; }
 
-  /* blank page gate */
+  /* BLANK BEFORE LOGIN */
   #app{ display:none; }
-  #gate{
-    padding:20px;
-    max-width:1200px;
-  }
-  #gate .title{ margin-bottom:12px; }
+  #gate{ display:block; }
 </style>
 </head>
 
 <body>
 
-<!-- BLANK BEFORE LOGIN (only this shows) -->
-<div id="gate">
+<!-- GATE (only thing visible before login) -->
+<div class="wrap" id="gate">
   <div class="title">Emanuel Payan | Burn</div>
   <div class="row">
     <a href="index.html">Back</a>
@@ -113,7 +109,7 @@
   </div>
 </div>
 
-<!-- FULL APP (hidden until login) -->
+<!-- APP (hidden until login succeeds) -->
 <div class="wrap" id="app">
   <div class="title">Emanuel Payan | Burn</div>
 
@@ -164,7 +160,7 @@ Liabilities (Debt)     : <input class="input" id="liabDebt" value="0.00" disable
     </div>
 
     <div class="block mono">
-Net Worth              : <span class="blue" id="netWorth">—</span>
+Net Worth               : <span class="blue" id="netWorth">—</span>
 30d Projection          : <span class="blue" id="nw30">—</span>
 90d Projection          : <span class="blue" id="nw90">—</span>
 365d Projection         : <span class="blue" id="nw365">—</span>
@@ -291,8 +287,19 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     return ymd(x);
   }
 
+  function showGate(){
+    $("app").style.display = "none";
+    $("gate").style.display = "";
+  }
+
+  function showApp(){
+    $("gate").style.display = "none";
+    $("app").style.display = "";
+  }
+
   function setSync(text){ $("sync").textContent = text; }
   function showErr(on){ $("err").style.display = on ? "" : "none"; }
+  function showGateErr(on){ $("gateErr").style.display = on ? "" : "none"; }
   function token(){ return sessionStorage.getItem(TOKEN_KEY) || ""; }
 
   async function apiGet(action){
@@ -677,9 +684,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     }
   }
 
-  let state = null;
-  let saveTimer = null;
-
   function pullInputsIntoState(state){
     state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
     state.avgIncome   = num($("avgIncome").value);
@@ -717,6 +721,9 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       rows[i].as = sel.value;
     });
   }
+
+  let state = null;
+  let saveTimer = null;
 
   function scheduleSave(){
     if (!state) return;
@@ -838,22 +845,23 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
   async function loadAll(){
     setSync("CONNECTING…");
     showErr(false);
+    showGateErr(false);
 
     const data = await apiGet("getAll");
+
     if (data && data.error){
       setSync(data.error === "unauthorized" ? "LOCKED" : "ERROR");
       showErr(data.error !== "unauthorized");
+      showGateErr(true);
       enableUI(false);
-      return;
+      showGate();
+      return false;
     }
 
     setSync("CONNECTED");
     enableUI(true);
     wireOnce();
-
-    // reveal app only after successful auth
-    $("gate").style.display = "none";
-    $("app").style.display = "";
+    showApp();
 
     const sheetStateObj = data.state || {};
     const empty = Object.keys(sheetStateObj).length === 0;
@@ -878,6 +886,7 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     renderNotes(data.notes || []);
 
     if (empty) await pushState(state);
+    return true;
   }
 
   // burn countdown tick
@@ -889,7 +898,7 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     if (el) el.textContent = secondsToDHMS(window.__burnCountdownSeconds);
   }, 1000);
 
-  // LOGIN on gate (always available)
+  // gate login (always available)
   $("loginBtnGate").addEventListener("click", async ()=>{
     const pass = prompt("PASSCODE:");
     if (!pass) return;
@@ -897,12 +906,13 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     await loadAll();
   });
 
-  // boot: if token exists, auto-load; otherwise stay blank
+  // boot: blank until auth works
+  showGate();
+  enableUI(false);
+
   if (token()){
+    // if token exists, try to auto-load; if bad token, gate stays up
     loadAll();
-  } else {
-    $("gate").style.display = "";
-    $("app").style.display = "none";
   }
 })();
 </script>
