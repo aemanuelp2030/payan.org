@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Burn | Emanuel Payan</title>
+
+<style>
+  html, body{
+    margin:0;
+    height:100%;
+    background:#000;
+    color:#fff;
+    font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
+    font-size:15px;
+  }
+  .wrap{ padding:20px; }
+  .title{ margin-bottom:14px; font-weight:normal; letter-spacing:.5px; }
+  .meta{ margin-bottom:14px; line-height:1.6; opacity:.9; }
+  .section{ margin:18px 0 8px; letter-spacing:.3px; }
+  .grid{ display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; }
+  .block{ min-width:320px; }
+  .mono{ white-space:pre-wrap; line-height:1.6; }
+  .blue{ color:#007BFF; }
+
+  .input{
+    background:#000;
+    color:#fff;
+    border:1px solid #fff;
+    padding:4px 6px;
+    font-family:inherit;
+    font-size:15px;
+    width:160px;
+    box-sizing:border-box;
+  }
+  .input.small{ width:110px; }
+  .btn{
+    background:#000;
+    color:#fff;
+    border:1px solid #fff;
+    padding:4px 10px;
+    font-family:inherit;
+    font-size:15px;
+    cursor:pointer;
+  }
+
+  table{
+    border-collapse:collapse;
+    width:100%;
+    max-width:1100px;
+  }
+  th, td{
+    border:1px solid #fff;
+    padding:6px 8px;
+    vertical-align:top;
+    font-weight:normal;
+  }
+  th{ text-align:left; }
+  td.num{ text-align:right; white-space:nowrap; }
+  td.notes{ width:40%; }
+  select{
+    background:#000;
+    color:#fff;
+    border:1px solid #fff;
+    padding:4px 6px;
+    font-family:inherit;
+    font-size:15px;
+  }
+  textarea{
+    width:100%;
+    background:#000;
+    color:#fff;
+    border:1px solid #fff;
+    font-family:inherit;
+    font-size:15px;
+    padding:8px;
+    box-sizing:border-box;
+  }
+  .muted{ opacity:.85; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  pre{
+    margin:0;
+    border:1px solid #fff;
+    padding:10px;
+    overflow:auto;
+    max-width:1100px;
+  }
+  a{
+    color:#fff;
+    text-decoration:none;
+    border-bottom:1px solid #fff;
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="title">Emanuel Payan | Burn</div>
+
+  <div class="meta">
+    <a href="index.html">Back</a><br>
+    LAST UPDATED: <span class="blue" id="lastUpdated">—</span><br>
+    INCLUDE SAUL IN BURN:
+    <select id="includeSaul">
+      <option value="yes">YES</option>
+      <option value="no">NO</option>
+    </select>
+  </div>
+
+  <div class="section">Burn Rate Overview (auto)</div>
+  <div class="grid">
+    <div class="block mono">
+Avg Net Monthly Income : <input class="input" id="avgIncome" value="3464.00">
+Hourly Wage            : <input class="input" id="hourlyWage" value="20.00">
+Hours / Week           : <input class="input small" id="hrsWeek" value="40">
+
+One-Time Inflow (Saul) : <input class="input" id="inflow" value="3000.00">
+Cash on Hand (ref)     : <input class="input" id="cash" value="2578.89">
+
+Income : Expense Ratio : <span class="blue" id="ratio">—</span>
+Left to Allocate / mo  : <span class="blue" id="leftMo">—</span>
+
+Burn per Year          : <span class="blue" id="burnYear">—</span>
+Annual Surplus         : <span class="blue" id="surplusYear">—</span>
+    </div>
+
+    <div class="block mono">
+Your Burn (Only)       : <span class="blue" id="burnYou">—</span>
+Saul Added Burn        : <span class="blue" id="burnSaul">—</span>
+Total Monthly Burn     : <span class="blue" id="burnTotal">—</span>
+
+Daily Burn (All-In)    : <span class="blue" id="daily">—</span>
+Weekly Burn (All-In)   : <span class="blue" id="weekly">—</span>
+
+Total Cash After Inflow: <span class="blue" id="cashAfter">—</span>
+Runway (cash only)     : <span class="blue" id="runway0">—</span> days
+Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
+Runway w/ Job          : <span class="blue" id="runwayJob">—</span>
+    </div>
+  </div>
+
+  <div class="section">Upcoming Due (next 14 days)</div>
+  <pre class="mono" id="dueList">—</pre>
+
+  <div class="section">Line Items (edit amounts + due dates)</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:14%;">CATEGORY</th>
+        <th style="width:24%;">ITEM</th>
+        <th style="width:12%;">AMOUNT ($)</th>
+        <th style="width:14%;">DUE</th>
+        <th style="width:26%;">NOTES</th>
+        <th style="width:10%;">COUNTS AS</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <div class="section">Burn Trajectories + Snapshots</div>
+  <div class="row" style="margin-bottom:10px;">
+    <button class="btn" id="snapDaily">SNAPSHOT (DAILY)</button>
+    <button class="btn" id="snapWeekly">SNAPSHOT (WEEKLY)</button>
+    <button class="btn" id="clearSnaps">CLEAR SNAPSHOTS</button>
+    <span class="muted">Auto: first load each day creates 1 daily snapshot.</span>
+  </div>
+
+  <div class="grid">
+    <div class="block">
+      <div class="muted" style="margin-bottom:6px;">DAILY SNAPSHOTS (latest 30)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th class="num">BURN/MO</th>
+            <th class="num">INCOME/MO</th>
+            <th class="num">CASH</th>
+            <th class="num">RUNWAY</th>
+          </tr>
+        </thead>
+        <tbody id="dailyRows"></tbody>
+      </table>
+    </div>
+
+    <div class="block">
+      <div class="muted" style="margin-bottom:6px;">WEEKLY SNAPSHOTS (latest 26)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>WEEK OF</th>
+            <th class="num">BURN/MO</th>
+            <th class="num">INCOME/MO</th>
+            <th class="num">CASH</th>
+            <th class="num">RUNWAY</th>
+          </tr>
+        </thead>
+        <tbody id="weeklyRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">Trajectory View (ASCII)</div>
+  <div class="muted" style="margin-bottom:8px;">
+    Burn and Cash trend based on snapshots. Higher bar = higher value (relative to samples shown).
+  </div>
+  <pre class="mono" id="traj"></pre>
+
+  <div class="section">Notes (autosaved + “save note” history)</div>
+  <div class="row" style="margin-bottom:10px;">
+    <button class="btn" id="saveNote">SAVE NOTE ENTRY</button>
+    <button class="btn" id="clearNotes">CLEAR NOTE HISTORY</button>
+    <span class="muted">Notes field autosaves; “Save note entry” keeps timestamped copies.</span>
+  </div>
+  <textarea rows="6" id="notes"></textarea>
+
+  <div class="section">Saved Note Entries (latest 20)</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:22%;">TIME</th>
+        <th>NOTE</th>
+      </tr>
+    </thead>
+    <tbody id="noteRows"></tbody>
+  </table>
+
+  <div class="section">Raw CSV (reference)</div>
+  <pre class="mono" id="raw"></pre>
+</div>
+
+<script>
+(() => {
+  const KEY = "emanuel_burn_page_v4";
+  const NOTES_KEY = "emanuel_burn_notes_v4";
+  const NOTE_HISTORY_KEY = "emanuel_burn_note_history_v2";
+  const SNAP_KEY = "emanuel_burn_snapshots_v2";
+
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => (isFinite(n) ? "$" + n.toFixed(2) : "—");
+  const num2 = (n) => (isFinite(n) ? n.toFixed(2) : "—");
+
+  function pad2(x){ return String(x).padStart(2,"0"); }
+  function ymd(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+  function fmt(d){
+    return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+
+      " "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());
+  }
+  function weekStartISO(d){
+    const x = new Date(d);
+    const day = (x.getDay()+6)%7; // Mon=0
+    x.setHours(0,0,0,0);
+    x.setDate(x.getDate() - day);
+    return ymd(x);
+  }
+
+  const DEFAULT = {
+    includeSaul: "yes",
+    inputs: { avgIncome: 3464.00, hourlyWage: 20.00, hrsWeek: 40, inflow: 3000.00, cash: 2578.89 },
+    rows: [
+      {cat:"INCOME", item:"Hourly Wage", amount:20.00,  due:"",   notes:"40 hrs/week", countsAs:"info"},
+      {cat:"INCOME", item:"Avg Net Monthly Income", amount:3464.00, due:"", notes:"Conservative base job", countsAs:"income"},
+      {cat:"INCOME", item:"One-Time Inflow (Saul)", amount:3000.00, due:"25", notes:"Hits on 25th (non-recurring)", countsAs:"info"},
+
+      {cat:"LIVING", item:"Housing - Rent", amount:800.00, due:"01", notes:"Due 1st", countsAs:"you"},
+      {cat:"LIVING", item:"Internet", amount:20.00, due:"", notes:"Monthly", countsAs:"you"},
+      {cat:"LIVING", item:"Food", amount:650.00, due:"", notes:"Monthly", countsAs:"you"},
+
+      {cat:"TRANSPORTATION", item:"Gas", amount:250.00, due:"", notes:"Monthly", countsAs:"you"},
+      {cat:"TRANSPORTATION", item:"Car Payment #1", amount:369.89, due:"11", notes:"Due 11th", countsAs:"you"},
+      {cat:"TRANSPORTATION", item:"Car Payment #2", amount:285.98, due:"17", notes:"Due 17th", countsAs:"you"},
+
+      {cat:"FAMILY AID", item:"Discover Card (Saul)", amount:50.00, due:"10", notes:"Due 10th", countsAs:"saul"},
+      {cat:"FAMILY AID", item:"Capital One (Saul)", amount:75.00, due:"22", notes:"Due 22nd", countsAs:"saul"},
+      {cat:"FAMILY AID", item:"Apple Card (Saul)", amount:257.16, due:"EOM", notes:"End of month", countsAs:"saul"}
+    ],
+    lastUpdatedISO: null
+  };
+
+  function clone(x){ return JSON.parse(JSON.stringify(x)); }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return clone(DEFAULT);
+      const s = JSON.parse(raw);
+      return {
+        includeSaul: (s.includeSaul === "no" ? "no" : "yes"),
+        inputs: {...DEFAULT.inputs, ...(s.inputs||{})},
+        rows: Array.isArray(s.rows) ? s.rows : clone(DEFAULT.rows),
+        lastUpdatedISO: s.lastUpdatedISO || null
+      };
+    }catch{
+      return clone(DEFAULT);
+    }
+  }
+  function saveState(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  function markUpdated(state){
+    state.lastUpdatedISO = new Date().toISOString();
+    $("lastUpdated").textContent = fmt(new Date(state.lastUpdatedISO));
+  }
+  function setLastUpdated(state){
+    if(state.lastUpdatedISO){
+      const d = new Date(state.lastUpdatedISO);
+      $("lastUpdated").textContent = isNaN(d.getTime()) ? "—" : fmt(d);
+    } else $("lastUpdated").textContent = "—";
+  }
+
+  function renderTable(state){
+    const tbody = $("rows");
+    tbody.innerHTML = "";
+
+    state.rows.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+
+      const tdCat = document.createElement("td");
+      tdCat.textContent = r.cat;
+
+      const tdItem = document.createElement("td");
+      tdItem.textContent = r.item;
+
+      const tdAmt = document.createElement("td");
+      tdAmt.className = "num";
+      const amt = document.createElement("input");
+      amt.className = "input small amt";
+      amt.value = (r.amount ?? 0);
+      amt.dataset.idx = String(idx);
+      tdAmt.appendChild(amt);
+
+      const tdDue = document.createElement("td");
+      const due = document.createElement("input");
+      due.className = "input small due";
+      due.placeholder = "MM-DD / DD / EOM";
+      due.value = (r.due ?? "");
+      due.dataset.idx = String(idx);
+      tdDue.appendChild(due);
+
+      const tdNotes = document.createElement("td");
+      tdNotes.className = "notes";
+      tdNotes.textContent = r.notes || "";
+
+      const tdWho = document.createElement("td");
+      const sel = document.createElement("select");
+      sel.dataset.idx = String(idx);
+      [
+        ["you","YOU (burn)"],
+        ["saul","SAUL (burn)"],
+        ["income","INCOME (mo)"],
+        ["info","INFO (ignore)"]
+      ].forEach(([v, label])=>{
+        const o = document.createElement("option");
+        o.value = v; o.textContent = label;
+        if((r.countsAs||"you") === v) o.selected = true;
+        sel.appendChild(o);
+      });
+      tdWho.appendChild(sel);
+
+      tr.append(tdCat, tdItem, tdAmt, tdDue, tdNotes, tdWho);
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ===== Due list =====
+  function endOfMonthDate(d){
+    const x = new Date(d.getFullYear(), d.getMonth()+1, 0);
+    x.setHours(0,0,0,0);
+    return x;
+  }
+
+  function parseDueToDate(dueStr, now){
+    const s = String(dueStr || "").trim();
+    if (!s) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)){
+      const dt = new Date(s + "T00:00:00");
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+
+    if (s.toUpperCase() === "EOM"){
+      return endOfMonthDate(now);
+    }
+
+    if (/^\d{2}-\d{2}$/.test(s)){
+      const [mm, dd] = s.split("-").map(Number);
+      if (!mm || !dd) return null;
+      let dt = new Date(now.getFullYear(), mm-1, dd);
+      dt.setHours(0,0,0,0);
+      const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (dt < today0){
+        dt = new Date(now.getFullYear()+1, mm-1, dd);
+        dt.setHours(0,0,0,0);
+      }
+      return dt;
+    }
+
+    if (/^\d{1,2}$/.test(s)){
+      const dd = Number(s);
+      if (!dd) return null;
+      let dt = new Date(now.getFullYear(), now.getMonth(), dd);
+      dt.setHours(0,0,0,0);
+      const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (dt < today0){
+        dt = new Date(now.getFullYear(), now.getMonth()+1, dd);
+        dt.setHours(0,0,0,0);
+      }
+      return dt;
+    }
+
+    return null;
+  }
+
+  function renderDueList(state){
+    const el = $("dueList");
+    const now = new Date();
+    const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const horizon = new Date(today0);
+    horizon.setDate(horizon.getDate() + 14);
+
+    const includeSaul = $("includeSaul").value !== "no";
+
+    const upcoming = state.rows
+      .map(r => ({ r, dueDate: parseDueToDate(r.due, now) }))
+      .filter(x => x.dueDate && x.dueDate >= today0 && x.dueDate <= horizon)
+      .filter(x => includeSaul ? true : x.r.countsAs !== "saul")
+      .sort((a,b) => a.dueDate - b.dueDate);
+
+    if (!upcoming.length){
+      el.textContent = "—";
+      return;
+    }
+
+    const lines = upcoming.map(x => {
+      const d = x.dueDate;
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+      const amt = (typeof x.r.amount === "number") ? x.r.amount.toFixed(2) : "0.00";
+      const who = x.r.countsAs === "saul" ? "SAUL" : (x.r.countsAs === "you" ? "YOU" : x.r.countsAs.toUpperCase());
+      return `${ds}  $${amt}  ${who}  ${x.r.item}`;
+    });
+
+    el.textContent = lines.join("\n");
+  }
+
+  // ===== Snapshots storage =====
+  function loadSnaps(){
+    try{
+      return JSON.parse(localStorage.getItem(SNAP_KEY) || '{"daily":[],"weekly":[],"lastDailyYMD":null,"lastWeeklyWeek":null}');
+    }catch{
+      return {daily:[], weekly:[], lastDailyYMD:null, lastWeeklyWeek:null};
+    }
+  }
+  function saveSnaps(s){ localStorage.setItem(SNAP_KEY, JSON.stringify(s)); }
+
+  function snapshotPayload(calcOut){
+    return {
+      ts: new Date().toISOString(),
+      ymd: ymd(new Date()),
+      week: weekStartISO(new Date()),
+      burn: calcOut.burnTotal,
+      income: calcOut.incomeMo,
+      cash: calcOut.cashAfter,
+      runway: calcOut.runwayAfter,
+      includeSaul: calcOut.includeSaul
+    };
+  }
+
+  function addDailySnapshot(calcOut){
+    const s = loadSnaps();
+    const today = ymd(new Date());
+    s.daily.unshift(snapshotPayload(calcOut));
+    s.daily = s.daily.slice(0,30);
+    s.lastDailyYMD = today;
+    saveSnaps(s);
+    renderSnapshots();
+  }
+
+  function addWeeklySnapshot(calcOut){
+    const s = loadSnaps();
+    const wk = weekStartISO(new Date());
+    s.weekly.unshift(snapshotPayload(calcOut));
+    s.weekly = s.weekly.slice(0,26);
+    s.lastWeeklyWeek = wk;
+    saveSnaps(s);
+    renderSnapshots();
+  }
+
+  function autoDailySnapshot(calcOut){
+    const s = loadSnaps();
+    const today = ymd(new Date());
+    if (s.lastDailyYMD !== today){
+      addDailySnapshot(calcOut);
+    }
+  }
+
+  function renderSnapshots(){
+    const s = loadSnaps();
+
+    const dailyT = $("dailyRows");
+    dailyT.innerHTML = "";
+    s.daily.forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${x.ymd}</td>
+        <td class="num">${money(x.burn)}</td>
+        <td class="num">${money(x.income)}</td>
+        <td class="num">${money(x.cash)}</td>
+        <td class="num">${isFinite(x.runway)? x.runway.toFixed(0) : "∞"}</td>
+      `;
+      dailyT.appendChild(tr);
+    });
+
+    const weeklyT = $("weeklyRows");
+    weeklyT.innerHTML = "";
+    s.weekly.forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${x.week}</td>
+        <td class="num">${money(x.burn)}</td>
+        <td class="num">${money(x.income)}</td>
+        <td class="num">${money(x.cash)}</td>
+        <td class="num">${isFinite(x.runway)? x.runway.toFixed(0) : "∞"}</td>
+      `;
+      weeklyT.appendChild(tr);
+    });
+
+    renderTrajectoryASCII(s);
+  }
+
+  function bar(value, min, max, width){
+    if (!isFinite(value) || max <= min) return " ".repeat(width);
+    const t = (value - min) / (max - min);
+    const n = Math.max(0, Math.min(width, Math.round(t * width)));
+    return "█".repeat(n) + " ".repeat(width - n);
+  }
+
+  function renderTrajectoryASCII(s){
+    const daily = (s.daily || []).slice(0,14).reverse();
+    const weekly = (s.weekly || []).slice(0,12).reverse();
+
+    const burnValsD = daily.map(x=>x.burn).filter(isFinite);
+    const cashValsD = daily.map(x=>x.cash).filter(isFinite);
+
+    const burnMinD = Math.min(...burnValsD, 0), burnMaxD = Math.max(...burnValsD, 1);
+    const cashMinD = Math.min(...cashValsD, 0), cashMaxD = Math.max(...cashValsD, 1);
+
+    const burnValsW = weekly.map(x=>x.burn).filter(isFinite);
+    const cashValsW = weekly.map(x=>x.cash).filter(isFinite);
+
+    const burnMinW = Math.min(...burnValsW, 0), burnMaxW = Math.max(...burnValsW, 1);
+    const cashMinW = Math.min(...cashValsW, 0), cashMaxW = Math.max(...cashValsW, 1);
+
+    let out = "";
+    out += "DAILY (latest 14)\n";
+    out += "DATE       BURN/MO                  CASH\n";
+    daily.forEach(x=>{
+      const b = bar(x.burn, burnMinD, burnMaxD, 22);
+      const c = bar(x.cash, cashMinD, cashMaxD, 22);
+      out += `${x.ymd}  ${b}  ${c}\n`;
+    });
+
+    out += "\nWEEKLY (latest 12)\n";
+    out += "WEEK OF    BURN/MO                  CASH\n";
+    weekly.forEach(x=>{
+      const b = bar(x.burn, burnMinW, burnMaxW, 22);
+      const c = bar(x.cash, cashMinW, cashMaxW, 22);
+      out += `${x.week}  ${b}  ${c}\n`;
+    });
+
+    $("traj").textContent = out.trimEnd();
+  }
+
+  // ===== Note history =====
+  function loadNoteHistory(){
+    try{ return JSON.parse(localStorage.getItem(NOTE_HISTORY_KEY) || "[]"); }
+    catch{ return []; }
+  }
+  function saveNoteHistory(arr){
+    localStorage.setItem(NOTE_HISTORY_KEY, JSON.stringify(arr));
+  }
+  function renderNoteHistory(){
+    const arr = loadNoteHistory();
+    const tbody = $("noteRows");
+    tbody.innerHTML = "";
+    arr.slice(0,20).forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${x.ts}</td><td>${escapeHtml(x.text).replace(/\n/g,"<br>")}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  // ===== Core calculation =====
+  function calc(state){
+    const includeSaul = state.includeSaul === "yes";
+
+    const avgIncome = +$("avgIncome").value || 0;
+    const hourlyWage = +$("hourlyWage").value || 0;
+    const hrsWeek = +$("hrsWeek").value || 0;
+    const inflow = +$("inflow").value || 0;
+    const cash = +$("cash").value || 0;
+
+    // sync table inputs back into state
+    document.querySelectorAll("input.amt").forEach(inp=>{
+      const idx = +inp.dataset.idx;
+      state.rows[idx].amount = (+inp.value || 0);
+    });
+    document.querySelectorAll("input.due").forEach(inp=>{
+      const idx = +inp.dataset.idx;
+      state.rows[idx].due = String(inp.value || "").trim();
+    });
+    document.querySelectorAll("tbody#rows select").forEach(sel=>{
+      const idx = +sel.dataset.idx;
+      state.rows[idx].countsAs = sel.value;
+    });
+
+    let burnYou = 0, burnSaul = 0;
+    let incomeMo = avgIncome;
+
+    state.rows.forEach(r=>{
+      const a = (+r.amount || 0);
+      if (r.countsAs === "you") burnYou += a;
+      else if (r.countsAs === "saul") burnSaul += a;
+      else if (r.countsAs === "income") incomeMo += a;
+    });
+
+    const burnTotal = burnYou + (includeSaul ? burnSaul : 0);
+
+    const ratio = burnTotal > 0 ? (incomeMo / burnTotal) : 0;
+    const leftMo = incomeMo - burnTotal;
+
+    const burnYear = burnTotal * 12;
+    const surplusYear = leftMo * 12;
+
+    const daily = burnTotal / 30.437;
+    const weekly = daily * 7;
+
+    const cashAfter = cash + inflow;
+
+    const runway0 = daily > 0 ? (cash / daily) : Infinity;
+    const runway1 = daily > 0 ? (cashAfter / daily) : Infinity;
+
+    const runwayJob = (incomeMo >= burnTotal) ? "Infinite" : "Not covered";
+
+    // update UI
+    $("burnYou").textContent = money(burnYou);
+    $("burnSaul").textContent = money(burnSaul);
+    $("burnTotal").textContent = money(burnTotal);
+
+    $("ratio").textContent = num2(ratio);
+    $("leftMo").textContent = money(leftMo);
+
+    $("burnYear").textContent = money(burnYear);
+    $("surplusYear").textContent = money(surplusYear);
+
+    $("daily").textContent = money(daily);
+    $("weekly").textContent = money(weekly);
+
+    $("cashAfter").textContent = money(cashAfter);
+    $("runway0").textContent = isFinite(runway0) ? runway0.toFixed(0) : "∞";
+    $("runway1").textContent = isFinite(runway1) ? runway1.toFixed(0) : "∞";
+    $("runwayJob").textContent = runwayJob;
+
+    // persist base inputs
+    state.inputs.avgIncome = avgIncome;
+    state.inputs.hourlyWage = hourlyWage;
+    state.inputs.hrsWeek = hrsWeek;
+    state.inputs.inflow = inflow;
+    state.inputs.cash = cash;
+
+    saveState(state);
+
+    return {
+      includeSaul,
+      incomeMo,
+      burnTotal,
+      cashAfter,
+      runwayAfter: runway1
+    };
+  }
+
+  // ===== Boot =====
+  const state = loadState();
+
+  // hydrate top inputs
+  $("avgIncome").value = String(state.inputs.avgIncome ?? 0);
+  $("hourlyWage").value = String(state.inputs.hourlyWage ?? 0);
+  $("hrsWeek").value = String(state.inputs.hrsWeek ?? 0);
+  $("inflow").value = String(state.inputs.inflow ?? 0);
+  $("cash").value = String(state.inputs.cash ?? 0);
+
+  $("includeSaul").value = state.includeSaul || "yes";
+  setLastUpdated(state);
+
+  renderTable(state);
+
+  $("raw").textContent =
+`Burn Rate Overview,,,,,,,,,
+Avg Net Monthly Income,,3464.00,Burn Rate,,2758.03,Income : Expense Ratio,,1.26,
+Left to Allocate / mo,,705.97,Burn per Year,,33096.36,Annual Surplus,,8471.64,
+
+CATEGORY,ITEM,AMOUNT ($),NOTES
+INCOME,Hourly Wage,20.00,40 hrs/week
+INCOME,Avg Net Monthly Income,3464.00,Conservative base job
+INCOME,One-Time Inflow (Saul),3000.00,Hits on 25th (non-recurring)
+
+LIVING,Housing - Rent,800.00,Due 1st
+LIVING,Internet,20.00,Monthly
+LIVING,Food,650.00,Monthly
+
+TRANSPORTATION,Gas,250.00,Monthly
+TRANSPORTATION,Car Payment #1,369.89,Due 11th
+TRANSPORTATION,Car Payment #2,285.98,Due 17th
+
+FAMILY AID,Discover Card (Saul),50.00,Due 10th
+FAMILY AID,Capital One (Saul),75.00,Due 22nd
+FAMILY AID,Apple Card (Saul),257.16,End of month`;
+
+  // Notes autosave
+  $("notes").value = localStorage.getItem(NOTES_KEY) || "";
+  $("notes").addEventListener("input", () => {
+    localStorage.setItem(NOTES_KEY, $("notes").value);
+  });
+
+  // Note history controls
+  $("saveNote").addEventListener("click", () => {
+    const text = ($("notes").value || "").trim();
+    if (!text) return;
+    const arr = loadNoteHistory();
+    arr.unshift({ ts: fmt(new Date()), text });
+    saveNoteHistory(arr.slice(0,20));
+    renderNoteHistory();
+  });
+  $("clearNotes").addEventListener("click", () => {
+    localStorage.removeItem(NOTE_HISTORY_KEY);
+    renderNoteHistory();
+  });
+  renderNoteHistory();
+
+  function onAnyChange(){
+    markUpdated(state);
+    const out = calc(state);
+    state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
+    saveState(state);
+    renderDueList(state);
+    renderSnapshots();
+    return out;
+  }
+
+  // inputs
+  ["avgIncome","hourlyWage","hrsWeek","inflow","cash","includeSaul"].forEach(id=>{
+    $(id).addEventListener("input", onAnyChange);
+    $(id).addEventListener("change", onAnyChange);
+  });
+
+  // table inputs + selects (event delegation)
+  $("rows").addEventListener("input", (e) => {
+    if (e.target && (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.tagName === "SELECT")) onAnyChange();
+  });
+  $("rows").addEventListener("change", (e) => {
+    if (e.target && (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.tagName === "SELECT")) onAnyChange();
+  });
+
+  // Initial calc
+  state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
+  const out0 = calc(state);
+  renderDueList(state);
+
+  // Auto daily snapshot once/day (on load)
+  autoDailySnapshot(out0);
+
+  // Snapshot buttons
+  $("snapDaily").addEventListener("click", () => {
+    const out = calc(state);
+    addDailySnapshot(out);
+  });
+  $("snapWeekly").addEventListener("click", () => {
+    const out = calc(state);
+    addWeeklySnapshot(out);
+  });
+  $("clearSnaps").addEventListener("click", () => {
+    localStorage.removeItem(SNAP_KEY);
+    renderSnapshots();
+  });
+
+  // Render snapshot tables + ASCII chart
+  renderSnapshots();
+
+})();
+</script>
+</body>
+</html>
