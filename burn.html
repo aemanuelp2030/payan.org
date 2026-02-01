@@ -103,6 +103,7 @@
       <a href="index.html">Back</a>
       <span class="muted">|</span>
       SYNC: <span class="blue" id="sync">CONNECTING…</span>
+      <span class="muted" id="err" style="display:none;">| <span class="blue">ERROR</span> (check console)</span>
     </div>
     LAST UPDATED: <span class="blue" id="lastUpdated">—</span><br>
     INCLUDE SAUL IN BURN:
@@ -194,7 +195,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     <button class="btn" id="saveNote">SAVE NOTE</button>
     <span class="muted">Saved to Google Sheets.</span>
   </div>
-  <textarea rows="6" id="notes"></textarea>
+  <textarea rows="6" id="notes" placeholder="Write note, then click SAVE NOTE…"></textarea>
 
   <div class="section">Note History</div>
   <table>
@@ -210,7 +211,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
 <script>
 (() => {
-  // Use your working no-auth web app URL (ends with /exec)
+  // Your working no-auth web app URL (ends with /exec)
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHUYAzQBNE5qQXOs07z7Gg_d78qZOb4WNCirHBeJOSSRcOMMx-NxWqHTTzTZOvFmjo3w/exec";
 
   const $ = (id) => document.getElementById(id);
@@ -229,10 +230,15 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     return ymd(x);
   }
 
+  function setSync(text){ $("sync").textContent = text; }
+  function showErr(on){ $("err").style.display = on ? "" : "none"; }
+
   async function apiGet(action){
     const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}`;
     const res = await fetch(url, { cache: "no-cache" });
-    return await res.json();
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch { return { error: "bad_json", status: res.status, text }; }
   }
 
   async function apiPost(action, payload){
@@ -241,7 +247,9 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       headers: { "Content-Type":"application/json" },
       body: JSON.stringify({ action, ...payload })
     });
-    return await res.json();
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch { return { error: "bad_json", status: res.status, text }; }
   }
 
   const DEFAULT = {
@@ -435,11 +443,11 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     daily.slice(-30).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(x.ymd || "")}</td>
-        <td class="num">${money(+x.burn||0)}</td>
-        <td class="num">${money(+x.income||0)}</td>
-        <td class="num">${money(+x.cash||0)}</td>
-        <td class="num">${isFinite(+x.runway) ? (+x.runway).toFixed(0) : "∞"}</td>
+        <td>${escapeHtml(x.ymd || x.DATE || x.date || "")}</td>
+        <td class="num">${money(+ (x.burn ?? x.BURN ?? 0))}</td>
+        <td class="num">${money(+ (x.income ?? x.INCOME ?? 0))}</td>
+        <td class="num">${money(+ (x.cash ?? x.CASH ?? 0))}</td>
+        <td class="num">${isFinite(+ (x.runway ?? x.RUNWAY)) ? (+ (x.runway ?? x.RUNWAY)).toFixed(0) : "∞"}</td>
       `;
       dT.appendChild(tr);
     });
@@ -449,39 +457,59 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     weekly.slice(-26).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(x.week || "")}</td>
-        <td class="num">${money(+x.burn||0)}</td>
-        <td class="num">${money(+x.income||0)}</td>
-        <td class="num">${money(+x.cash||0)}</td>
-        <td class="num">${isFinite(+x.runway) ? (+x.runway).toFixed(0) : "∞"}</td>
+        <td>${escapeHtml(x.week || x.WEEK || "")}</td>
+        <td class="num">${money(+ (x.burn ?? x.BURN ?? 0))}</td>
+        <td class="num">${money(+ (x.income ?? x.INCOME ?? 0))}</td>
+        <td class="num">${money(+ (x.cash ?? x.CASH ?? 0))}</td>
+        <td class="num">${isFinite(+ (x.runway ?? x.RUNWAY)) ? (+ (x.runway ?? x.RUNWAY)).toFixed(0) : "∞"}</td>
       `;
       wT.appendChild(tr);
     });
   }
 
+  // tolerant notes renderer (handles header mismatch)
   function renderNotes(rows){
     const tbody = $("noteRows");
     tbody.innerHTML = "";
+
+    const pick = (obj, keys) => {
+      for (const k of keys) {
+        if (obj && obj[k] != null && String(obj[k]).trim() !== "") return obj[k];
+      }
+      return "";
+    };
+
     rows.slice(-20).reverse().forEach(x=>{
+      const ts = pick(x, ["ts","time","timestamp","TS","Time","Timestamp"]);
+      const note = pick(x, ["note","notes","text","NOTE","Notes","Text"]);
+
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${escapeHtml(String(x.ts||""))}</td><td>${escapeHtml(String(x.note||"")).replace(/\n/g,"<br>")}</td>`;
+      tr.innerHTML =
+        `<td>${escapeHtml(String(ts))}</td>` +
+        `<td>${escapeHtml(String(note)).replace(/\n/g,"<br>")}</td>`;
       tbody.appendChild(tr);
     });
   }
 
   async function pushState(state){
-    $("sync").textContent = "SAVING…";
+    setSync("SAVING…");
+    showErr(false);
+
     const res = await apiPost("saveState", { state: buildSheetState(state) });
     if (res && res.ok){
-      $("sync").textContent = "CONNECTED";
+      setSync("CONNECTED");
       $("lastUpdated").textContent = fmt(new Date());
     } else {
-      $("sync").textContent = "SAVE FAILED";
+      setSync("SAVE FAILED");
+      showErr(true);
+      console.log("saveState failed:", res);
     }
   }
 
   async function addSnapshot(type, state, calcOut){
-    $("sync").textContent = "SAVING…";
+    setSync("SAVING…");
+    showErr(false);
+
     const snap = {
       type,
       ymd: ymd(new Date()),
@@ -492,35 +520,24 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       runway: calcOut.runway1,
       includeSaul: state.includeSaul
     };
-    const res = await apiPost("addSnapshot", { snapshot: snap });
-    $("sync").textContent = (res && res.ok) ? "CONNECTED" : "SAVE FAILED";
-  }
 
-  async function addNote(text){
-    $("sync").textContent = "SAVING…";
-    const res = await apiPost("addNote", { note: text });
-    $("sync").textContent = (res && res.ok) ? "CONNECTED" : "SAVE FAILED";
+    const res = await apiPost("addSnapshot", { snapshot: snap });
+    if (res && res.ok) setSync("CONNECTED");
+    else {
+      setSync("SAVE FAILED");
+      showErr(true);
+      console.log("addSnapshot failed:", res);
+    }
   }
 
   let state = null;
   let saveTimer = null;
-
-  function scheduleSave(){
-    if (!state) return;
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(async ()=>{
-      pullInputsIntoState();
-      const c = calcAndRender(state);
-      await pushState(state);
-    }, 450);
-  }
 
   function pullInputsIntoState(){
     state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
     state.avgIncome = +$("avgIncome").value || 0;
     state.inflow = +$("inflow").value || 0;
     state.cash = +$("cash").value || 0;
-    state.notes = $("notes").value || "";
 
     document.querySelectorAll("input.amt").forEach(inp=>{
       const idx = +inp.dataset.idx;
@@ -536,35 +553,51 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     });
   }
 
-  async function boot(){
-    $("sync").textContent = "CONNECTING…";
-    const data = await apiGet("getAll");
+  function scheduleSave(){
+    if (!state) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      pullInputsIntoState();
+      calcAndRender(state);
+      await pushState(state);
+    }, 450);
+  }
 
-    $("sync").textContent = "CONNECTED";
+  async function boot(){
+    setSync("CONNECTING…");
+    showErr(false);
+
+    const data = await apiGet("getAll");
+    if (data && data.error){
+      setSync("ERROR");
+      showErr(true);
+      console.log("getAll error:", data);
+      return;
+    }
+
+    setSync("CONNECTED");
 
     const sheetStateObj = data.state || {};
     const empty = Object.keys(sheetStateObj).length === 0;
 
     state = empty ? JSON.parse(JSON.stringify(DEFAULT)) : parseState(sheetStateObj);
 
-    // hydrate UI
     $("includeSaul").value = (state.includeSaul === "no" ? "no" : "yes");
     $("avgIncome").value = String(state.avgIncome);
     $("inflow").value = String(state.inflow);
     $("cash").value = String(state.cash);
-    $("notes").value = state.notes || "";
     $("lastUpdated").textContent = state.updatedAt ? fmt(new Date(state.updatedAt)) : "—";
 
     renderTable(state);
-    const c = calcAndRender(state);
+    calcAndRender(state);
     renderSnapshots(data.snapshots || []);
     renderNotes(data.notes || []);
 
-    // if sheet is empty, initialize once
+    // Initialize state once if empty
     if (empty) await pushState(state);
 
-    // listeners
-    ["includeSaul","avgIncome","inflow","cash","notes"].forEach(id=>{
+    // autosave inputs
+    ["includeSaul","avgIncome","inflow","cash"].forEach(id=>{
       $(id).addEventListener("input", scheduleSave);
       $(id).addEventListener("change", scheduleSave);
     });
@@ -578,12 +611,13 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
     });
 
+    // snapshot buttons
     $("snapDaily").addEventListener("click", async ()=>{
       pullInputsIntoState();
       const c2 = calcAndRender(state);
       await addSnapshot("daily", state, c2);
       const fresh = await apiGet("getAll");
-      renderSnapshots(fresh.snapshots || []);
+      if (!fresh.error) renderSnapshots(fresh.snapshots || []);
     });
 
     $("snapWeekly").addEventListener("click", async ()=>{
@@ -591,15 +625,34 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       const c2 = calcAndRender(state);
       await addSnapshot("weekly", state, c2);
       const fresh = await apiGet("getAll");
-      renderSnapshots(fresh.snapshots || []);
+      if (!fresh.error) renderSnapshots(fresh.snapshots || []);
     });
 
+    // SAVE NOTE (fixed)
     $("saveNote").addEventListener("click", async ()=>{
       const text = ($("notes").value || "").trim();
       if (!text) return;
-      await addNote(text);
+
+      setSync("SAVING…");
+      showErr(false);
+
+      const res = await apiPost("addNote", { note: text });
+      if (!(res && res.ok)) {
+        setSync("SAVE FAILED");
+        showErr(true);
+        console.log("addNote failed:", res);
+        return;
+      }
+
+      $("notes").value = ""; // clear so you know it saved
+      setSync("CONNECTED");
+
       const fresh = await apiGet("getAll");
-      renderNotes(fresh.notes || []);
+      if (fresh && !fresh.error) renderNotes(fresh.notes || []);
+      else {
+        showErr(true);
+        console.log("refresh getAll after note failed:", fresh);
+      }
     });
   }
 
