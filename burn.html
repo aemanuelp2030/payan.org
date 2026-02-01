@@ -1,221 +1,180 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Burn | Emanuel Payan</title>
+// ====== CONFIG ======
+const SPREADSHEET_ID = "PASTE_SHEET_ID_ONLY_HERE"; // example: 1JbNcBmNs6VdauH1V--Ha4_2D2_rTpb1yW-Ld1kf6blk
 
-<style>
-  html, body{
-    margin:0;
-    height:100%;
-    background:#000;
-    color:#fff;
-    font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
-    font-size:15px;
-  }
-  .wrap{ padding:20px; }
-  .title{ margin-bottom:10px; letter-spacing:.5px; }
-  .meta{ margin-bottom:14px; line-height:1.6; }
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  .section{ margin:16px 0 8px; }
-  .grid{ display:flex; gap:40px; flex-wrap:wrap; }
-  .block{ min-width:320px; }
-  .mono{ white-space:pre-wrap; line-height:1.6; }
-  .blue{ color:#007BFF; }
-  .muted{ opacity:.85; }
+// Script Properties:
+// TOKEN = your passcode (example: Epayn2030)
+// OPTIONAL: RATE_LIMIT_PER_MIN = "60"
 
-  a{ color:#fff; text-decoration:none; }
+function doGet(e) {
+  const token = (e.parameter.token || "");
+  if (!isAuthed(token)) return json({ error: "unauthorized" });
+  if (!rateLimitOk(token)) return json({ error: "rate_limited" });
 
-  .input{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    padding:4px 6px;
-    font-family:inherit;
-    font-size:15px;
-    width:170px;
-  }
-  .input.small{ width:120px; }
+  const action = e.parameter.action || "";
+  if (action === "getAll") return json(getAll_());
+  return json({ error: "unknown_action" });
+}
 
-  .btn{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    padding:4px 10px;
-    font-family:inherit;
-    font-size:15px;
-    cursor:pointer;
+function doPost(e) {
+  let body = {};
+  try {
+    body = JSON.parse((e.postData && e.postData.contents) || "{}");
+  } catch (err) {
+    return json({ error: "bad_json" });
   }
 
-  select, textarea{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    font-family:inherit;
-    font-size:15px;
-  }
+  const token = (body.token || "");
+  if (!isAuthed(token)) return json({ error: "unauthorized" });
+  if (!rateLimitOk(token)) return json({ error: "rate_limited" });
 
-  textarea{ width:100%; padding:8px; }
+  const action = body.action || "";
+  if (action === "saveState") return json(saveState_(body.state || {}));
+  if (action === "addSnapshot") return json(addSnapshot_(body.snapshot || {}));
+  if (action === "addNote") return json(addNote_(body.note || ""));
+  if (action === "clearAll") return json(clearAll_());
+  return json({ error: "unknown_action" });
+}
 
-  table{
-    border-collapse:collapse;
-    width:100%;
-  }
-  th, td{
-    border:1px solid #fff;
-    padding:6px 8px;
-    font-weight:normal;
-  }
-  td.num{ text-align:right; }
-</style>
-</head>
+// ====== AUTH + RATE LIMIT ======
+function isAuthed(token) {
+  const expected = PropertiesService.getScriptProperties().getProperty("TOKEN");
+  return expected && token && token === expected;
+}
 
-<body>
-<div class="wrap">
-  <div class="title">Emanuel Payan | Burn</div>
+function rateLimitOk(token){
+  const props = PropertiesService.getScriptProperties();
+  const limit = Number(props.getProperty("RATE_LIMIT_PER_MIN") || "60");
 
-  <div class="meta">
-    <div class="row">
-      <a href="index.html">Back</a> |
-      SYNC: <span class="blue" id="sync">LOCKED</span> |
-      <button class="btn" id="loginBtn">LOGIN</button>
-      <button class="btn" id="logoutBtn" style="display:none;">LOGOUT</button>
-      <span id="err" class="muted" style="display:none;">| ERROR</span>
-    </div>
-    LAST UPDATED: <span class="blue" id="lastUpdated">—</span><br>
-    INCLUDE SAUL IN BURN:
-    <select id="includeSaul" disabled>
-      <option value="yes">YES</option>
-      <option value="no">NO</option>
-    </select>
-  </div>
+  const cache = CacheService.getScriptCache();
+  const key = "rl:" + token;
+  const raw = cache.get(key);
+  const n = raw ? Number(raw) : 0;
 
-  <div class="section">Inputs</div>
-  <div class="grid mono">
-    <div>
-Avg Net Monthly Income : <input class="input" id="avgIncome" disabled>
-One-Time Inflow (Saul) : <input class="input" id="inflow" disabled>
-Cash on Hand (ref)    : <input class="input" id="cash" disabled>
-    </div>
+  if (n >= limit) return false;
 
-    <div>
-Total Monthly Burn    : <span class="blue" id="burnTotal">—</span>
-Left / mo             : <span class="blue" id="leftMo">—</span>
-Daily Burn            : <span class="blue" id="daily">—</span>
-Weekly Burn           : <span class="blue" id="weekly">—</span>
-Burn / Year           : <span class="blue" id="yearly">—</span>
-Runway (after inflow) : <span class="blue" id="runway1">—</span> days
-    </div>
-  </div>
+  // increment and keep for 60s
+  cache.put(key, String(n + 1), 60);
+  return true;
+}
 
-  <div class="section">Notes</div>
-  <button class="btn" id="saveNote" disabled>SAVE NOTE</button>
-  <textarea id="notes" rows="6" disabled></textarea>
+// ====== SHEETS HELPERS ======
+function ss_(){ return SpreadsheetApp.openById(SPREADSHEET_ID); }
 
-  <div class="section">Note History</div>
-  <table>
-    <thead><tr><th>TIME</th><th>NOTE</th></tr></thead>
-    <tbody id="noteRows"></tbody>
-  </table>
-</div>
+function ensureSheet_(name, headers){
+  const s = ss_();
+  let sh = s.getSheetByName(name);
+  if (!sh) sh = s.insertSheet(name);
 
-<script>
-(() => {
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHUYAzQBNE5qQXOs07z7Gg_d78qZOb4WNCirHBeJOSSRcOMMx-NxWqHTTzTZOvFmjo3w/exec";
-  const TOKEN_KEY = "emanuel_burn_token_session";
-  const $ = id => document.getElementById(id);
-
-  const token = () => sessionStorage.getItem(TOKEN_KEY) || "";
-
-  const money = n => isFinite(n) ? "$" + n.toFixed(2) : "—";
-  const fmt = d => d.toISOString().replace("T"," ").slice(0,19);
-
-  function setSync(t){ $("sync").textContent = t; }
-  function showErr(v){ $("err").style.display = v ? "" : "none"; }
-
-  async function apiGet(action){
-    const r = await fetch(`${SCRIPT_URL}?action=${action}&token=${encodeURIComponent(token())}`);
-    return r.json();
-  }
-
-  // 🔑 CORS-SAFE POST (NO HEADERS)
-  async function apiPost(action, payload){
-    const r = await fetch(SCRIPT_URL,{
-      method:"POST",
-      body: JSON.stringify({ action, token: token(), ...payload })
-    });
-    return r.json();
-  }
-
-  function enable(on){
-    ["includeSaul","avgIncome","inflow","cash","notes","saveNote"]
-      .forEach(id => $(id).disabled = !on);
-  }
-
-  function renderNotes(rows){
-    const t = $("noteRows");
-    t.innerHTML = "";
-    rows.slice(-20).reverse().forEach(r=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r.ts||""}</td><td>${(r.note||"").replace(/\n/g,"<br>")}</td>`;
-      t.appendChild(tr);
-    });
-  }
-
-  async function load(){
-    setSync("CONNECTING…");
-    const data = await apiGet("getAll");
-    if (data.error){
-      setSync("LOCKED");
-      enable(false);
-      return;
+  const lastRow = sh.getLastRow();
+  if (lastRow < 1){
+    sh.getRange(1,1,1,headers.length).setValues([headers]);
+  } else {
+    const existing = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0].map(String);
+    const ok = headers.every((h,i)=>existing[i]===h);
+    if (!ok){
+      sh.clearContents();
+      sh.getRange(1,1,1,headers.length).setValues([headers]);
     }
-
-    enable(true);
-    setSync("CONNECTED");
-    renderNotes(data.notes||[]);
   }
+  return sh;
+}
 
-  $("saveNote").onclick = async ()=>{
-    const text = $("notes").value.trim();
-    if (!text) return;
-
-    setSync("SAVING…");
-    const r = await apiPost("addNote",{ note:text });
-    if (r.ok){
-      $("notes").value = "";
-      setSync("CONNECTED");
-      const fresh = await apiGet("getAll");
-      renderNotes(fresh.notes||[]);
-    } else {
-      setSync("ERROR");
-      showErr(true);
+function readRows_(sh){
+  const values = sh.getDataRange().getValues();
+  if (values.length < 2) return [];
+  const headers = values[0].map(String);
+  const out = [];
+  for (let i=1;i<values.length;i++){
+    const r = {};
+    for (let j=0;j<headers.length;j++){
+      r[headers[j]] = values[i][j];
     }
-  };
-
-  $("loginBtn").onclick = async ()=>{
-    const p = prompt("PASSCODE:");
-    if (!p) return;
-    sessionStorage.setItem(TOKEN_KEY,p);
-    $("loginBtn").style.display="none";
-    $("logoutBtn").style.display="";
-    await load();
-  };
-
-  $("logoutBtn").onclick = ()=>{
-    sessionStorage.removeItem(TOKEN_KEY);
-    location.reload();
-  };
-
-  if (token()){
-    $("loginBtn").style.display="none";
-    $("logoutBtn").style.display="";
+    out.push(r);
   }
+  return out;
+}
 
-  load();
-})();
-</script>
-</body>
-</html>
+function readState_(sh){
+  const values = sh.getDataRange().getValues();
+  if (values.length < 2) return {};
+  const out = {};
+  for (let i=1;i<values.length;i++){
+    const k = values[i][0];
+    const v = values[i][1];
+    if (k) out[String(k)] = v;
+  }
+  return out;
+}
 
+// ====== ACTIONS ======
+function getAll_(){
+  const s = ss_();
+  const stateSh = ensureSheet_("state", ["key","value"]);
+  const snapsSh = ensureSheet_("snapshots", ["type","ts","ymd","week","burn","income","cash","net","runway","includeSaul"]);
+  const notesSh = ensureSheet_("notes", ["ts","note"]);
+
+  return {
+    state: readState_(stateSh),
+    snapshots: readRows_(snapsSh),
+    notes: readRows_(notesSh)
+  };
+}
+
+function saveState_(obj){
+  const stateSh = ensureSheet_("state", ["key","value"]);
+  stateSh.clearContents();
+  stateSh.getRange(1,1,1,2).setValues([["key","value"]]);
+
+  const keys = Object.keys(obj || {});
+  if (!keys.length) return { ok:true };
+
+  const rows = keys.map(k => [String(k), String(obj[k])]);
+  stateSh.getRange(2,1,rows.length,2).setValues(rows);
+
+  return { ok:true };
+}
+
+function addSnapshot_(snap){
+  const snapsSh = ensureSheet_("snapshots", ["type","ts","ymd","week","burn","income","cash","net","runway","includeSaul"]);
+  const ts = new Date().toISOString();
+
+  snapsSh.appendRow([
+    snap.type || "daily",
+    ts,
+    snap.ymd || "",
+    snap.week || "",
+    snap.burn || "",
+    snap.income || "",
+    snap.cash || "",
+    snap.net || "",
+    snap.runway || "",
+    snap.includeSaul || ""
+  ]);
+
+  return { ok:true, ts };
+}
+
+function addNote_(note){
+  const notesSh = ensureSheet_("notes", ["ts","note"]);
+  const ts = new Date().toISOString();
+  notesSh.appendRow([ts, String(note || "")]);
+  return { ok:true, ts };
+}
+
+function clearAll_(){
+  const s = ss_();
+  ["state","snapshots","notes"].forEach(name=>{
+    const sh = s.getSheetByName(name);
+    if (sh) sh.clearContents();
+  });
+  ensureSheet_("state", ["key","value"]);
+  ensureSheet_("snapshots", ["type","ts","ymd","week","burn","income","cash","net","runway","includeSaul"]);
+  ensureSheet_("notes", ["ts","note"]);
+  return { ok:true };
+}
+
+function json(obj){
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
