@@ -877,10 +877,18 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     if (el) el.textContent = secondsToDHMS(window.__burnCountdownSeconds);
   }, 1000);
 
-  // boot
-  if (token()){
-    $("loginBtn").style.display = "none";
-    $("logoutBtn").style.display = "";
+  // boot (always ask)
+if (token()){
+  $("loginBtn").style.display = "none";
+  $("logoutBtn").style.display = "";
+  loadAll();                 // only auto-load when token exists
+} else {
+  $("loginBtn").style.display = "";
+  $("logoutBtn").style.display = "none";
+  setSync("LOCKED");         // stay locked until user clicks LOGIN
+  enableUI(false);
+}
+
   }
   loadAll();
 })();
