@@ -376,30 +376,49 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
   }
 
   function renderTable(state){
-    const tbody = $("rows");
-    tbody.innerHTML = "";
+  const tbody = $("rows");
+  tbody.innerHTML = "";
 
-    state.rows.forEach((r, idx)=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><input class="input small cat" data-idx="${idx}" value="${esc(r.cat||"")}"></td>
-        <td><input class="input" style="width:100%;" class="item" data-idx="${idx}" value="${esc(r.item||"")}"></td>
-        <td class="num"><input class="input small amt" data-idx="${idx}" value="${num(r.amount).toFixed(2)}"></td>
-        <td><input class="input tiny due" data-idx="${idx}" placeholder="DD / MM-DD / EOM" value="${esc(r.due||"")}"></td>
-        <td><input class="input" style="width:100%;" class="note" data-idx="${idx}" value="${esc(r.notes||"")}"></td>
-        <td class="center">
-          <select class="as" data-idx="${idx}">
-            <option value="you">YOU</option>
-            <option value="saul">SAUL</option>
-            <option value="ignore">-</option>
-          </select>
-        </td>
-        <td class="center"><button class="btn del" data-idx="${idx}">X</button></td>
-      `;
-      tbody.appendChild(tr);
-      tr.querySelector("select.as").value = (r.as || "you");
-    });
-  }
+  state.rows.forEach((r, idx)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <input class="input small cat" data-idx="${idx}" value="${esc(r.cat||"")}">
+      </td>
+
+      <td>
+        <input class="input item" data-idx="${idx}" style="width:100%;" value="${esc(r.item||"")}">
+      </td>
+
+      <td class="num">
+        <input class="input small amt" data-idx="${idx}" value="${num(r.amount).toFixed(2)}">
+      </td>
+
+      <td>
+        <input class="input tiny due" data-idx="${idx}" placeholder="DD / MM-DD / EOM" value="${esc(r.due||"")}">
+      </td>
+
+      <td>
+        <input class="input note" data-idx="${idx}" style="width:100%;" value="${esc(r.notes||"")}">
+      </td>
+
+      <td class="center">
+        <select class="as" data-idx="${idx}">
+          <option value="you">YOU</option>
+          <option value="saul">SAUL</option>
+          <option value="ignore">-</option>
+        </select>
+      </td>
+
+      <td class="center">
+        <button class="btn del" data-idx="${idx}">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+    tr.querySelector("select.as").value = (r.as || "you");
+  });
+}
+
 
   function endOfMonthDate(d){
     const x = new Date(d.getFullYear(), d.getMonth()+1, 0);
