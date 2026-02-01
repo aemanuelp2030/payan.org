@@ -102,12 +102,15 @@
     <div class="row">
       <a href="index.html">Back</a>
       <span class="muted">|</span>
-      SYNC: <span class="blue" id="sync">CONNECTING…</span>
+      SYNC: <span class="blue" id="sync">LOCKED</span>
+      <span class="muted">|</span>
+      <button class="btn" id="loginBtn">LOGIN</button>
+      <button class="btn" id="logoutBtn" style="display:none;">LOGOUT</button>
       <span class="muted" id="err" style="display:none;">| <span class="blue">ERROR</span> (check console)</span>
     </div>
     LAST UPDATED: <span class="blue" id="lastUpdated">—</span><br>
     INCLUDE SAUL IN BURN:
-    <select id="includeSaul">
+    <select id="includeSaul" disabled>
       <option value="yes">YES</option>
       <option value="no">NO</option>
     </select>
@@ -116,9 +119,9 @@
   <div class="section">Inputs</div>
   <div class="grid">
     <div class="block mono">
-Avg Net Monthly Income : <input class="input" id="avgIncome" value="3464.00">
-One-Time Inflow (Saul) : <input class="input" id="inflow" value="3000.00">
-Cash on Hand (ref)     : <input class="input" id="cash" value="2578.89">
+Avg Net Monthly Income : <input class="input" id="avgIncome" value="3464.00" disabled>
+One-Time Inflow (Saul) : <input class="input" id="inflow" value="3000.00" disabled>
+Cash on Hand (ref)     : <input class="input" id="cash" value="2578.89" disabled>
     </div>
 
     <div class="block mono">
@@ -151,8 +154,8 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
   <div class="section">Snapshots</div>
   <div class="row" style="margin-bottom:10px;">
-    <button class="btn" id="snapDaily">DAILY</button>
-    <button class="btn" id="snapWeekly">WEEKLY</button>
+    <button class="btn" id="snapDaily" disabled>DAILY</button>
+    <button class="btn" id="snapWeekly" disabled>WEEKLY</button>
     <span class="muted">Saved to Google Sheets.</span>
   </div>
 
@@ -192,10 +195,10 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
   <div class="section">Notes</div>
   <div class="row" style="margin-bottom:10px;">
-    <button class="btn" id="saveNote">SAVE NOTE</button>
+    <button class="btn" id="saveNote" disabled>SAVE NOTE</button>
     <span class="muted">Saved to Google Sheets.</span>
   </div>
-  <textarea rows="6" id="notes" placeholder="Write note, then click SAVE NOTE…"></textarea>
+  <textarea rows="6" id="notes" placeholder="Write note, then click SAVE NOTE…" disabled></textarea>
 
   <div class="section">Note History</div>
   <table>
@@ -211,9 +214,10 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
 <script>
 (() => {
-  // Your working no-auth web app URL (ends with /exec)
+  // PUT YOUR WEB APP /exec URL HERE
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHUYAzQBNE5qQXOs07z7Gg_d78qZOb4WNCirHBeJOSSRcOMMx-NxWqHTTzTZOvFmjo3w/exec";
 
+  const TOKEN_KEY = "emanuel_burn_token_session";
   const $ = (id) => document.getElementById(id);
 
   const money = (n) => (isFinite(n) ? "$" + n.toFixed(2) : "—");
@@ -233,8 +237,12 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
   function setSync(text){ $("sync").textContent = text; }
   function showErr(on){ $("err").style.display = on ? "" : "none"; }
 
+  function token(){
+    return sessionStorage.getItem(TOKEN_KEY) || "";
+  }
+
   async function apiGet(action){
-    const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}`;
+    const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token())}`;
     const res = await fetch(url, { cache: "no-cache" });
     const text = await res.text();
     try { return JSON.parse(text); }
@@ -245,11 +253,23 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     const res = await fetch(SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ action, ...payload })
+      body: JSON.stringify({ action, token: token(), ...payload })
     });
     const text = await res.text();
     try { return JSON.parse(text); }
     catch { return { error: "bad_json", status: res.status, text }; }
+  }
+
+  function enableUI(on){
+    $("includeSaul").disabled = !on;
+    $("avgIncome").disabled = !on;
+    $("inflow").disabled = !on;
+    $("cash").disabled = !on;
+    $("snapDaily").disabled = !on;
+    $("snapWeekly").disabled = !on;
+    $("saveNote").disabled = !on;
+    $("notes").disabled = !on;
+    document.querySelectorAll("#rows input, #rows select").forEach(el => el.disabled = !on);
   }
 
   const DEFAULT = {
@@ -443,7 +463,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     daily.slice(-30).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(x.ymd || x.DATE || x.date || "")}</td>
+        <td>${escapeHtml(String(x.ymd || x.date || x.DATE || ""))}</td>
         <td class="num">${money(+ (x.burn ?? x.BURN ?? 0))}</td>
         <td class="num">${money(+ (x.income ?? x.INCOME ?? 0))}</td>
         <td class="num">${money(+ (x.cash ?? x.CASH ?? 0))}</td>
@@ -457,7 +477,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     weekly.slice(-26).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(x.week || x.WEEK || "")}</td>
+        <td>${escapeHtml(String(x.week || x.WEEK || ""))}</td>
         <td class="num">${money(+ (x.burn ?? x.BURN ?? 0))}</td>
         <td class="num">${money(+ (x.income ?? x.INCOME ?? 0))}</td>
         <td class="num">${money(+ (x.cash ?? x.CASH ?? 0))}</td>
@@ -467,7 +487,6 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     });
   }
 
-  // tolerant notes renderer (handles header mismatch)
   function renderNotes(rows){
     const tbody = $("noteRows");
     tbody.innerHTML = "";
@@ -500,7 +519,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
       setSync("CONNECTED");
       $("lastUpdated").textContent = fmt(new Date());
     } else {
-      setSync("SAVE FAILED");
+      setSync("ERROR");
       showErr(true);
       console.log("saveState failed:", res);
     }
@@ -524,7 +543,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     const res = await apiPost("addSnapshot", { snapshot: snap });
     if (res && res.ok) setSync("CONNECTED");
     else {
-      setSync("SAVE FAILED");
+      setSync("ERROR");
       showErr(true);
       console.log("addSnapshot failed:", res);
     }
@@ -563,19 +582,21 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     }, 450);
   }
 
-  async function boot(){
+  async function loadAll(){
     setSync("CONNECTING…");
     showErr(false);
 
     const data = await apiGet("getAll");
     if (data && data.error){
-      setSync("ERROR");
-      showErr(true);
+      setSync(data.error === "unauthorized" ? "LOCKED" : "ERROR");
+      showErr(data.error !== "unauthorized");
       console.log("getAll error:", data);
+      enableUI(false);
       return;
     }
 
     setSync("CONNECTED");
+    enableUI(true);
 
     const sheetStateObj = data.state || {};
     const empty = Object.keys(sheetStateObj).length === 0;
@@ -593,70 +614,89 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     renderSnapshots(data.snapshots || []);
     renderNotes(data.notes || []);
 
-    // Initialize state once if empty
     if (empty) await pushState(state);
 
-    // autosave inputs
-    ["includeSaul","avgIncome","inflow","cash"].forEach(id=>{
-      $(id).addEventListener("input", scheduleSave);
-      $(id).addEventListener("change", scheduleSave);
-    });
+    // listeners (attach once)
+    if (!loadAll._wired){
+      loadAll._wired = true;
 
-    $("rows").addEventListener("input", (e)=>{
-      if (!e.target) return;
-      if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
-    });
-    $("rows").addEventListener("change", (e)=>{
-      if (!e.target) return;
-      if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
-    });
+      ["includeSaul","avgIncome","inflow","cash"].forEach(id=>{
+        $(id).addEventListener("input", scheduleSave);
+        $(id).addEventListener("change", scheduleSave);
+      });
 
-    // snapshot buttons
-    $("snapDaily").addEventListener("click", async ()=>{
-      pullInputsIntoState();
-      const c2 = calcAndRender(state);
-      await addSnapshot("daily", state, c2);
-      const fresh = await apiGet("getAll");
-      if (!fresh.error) renderSnapshots(fresh.snapshots || []);
-    });
+      $("rows").addEventListener("input", (e)=>{
+        if (!e.target) return;
+        if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
+      });
+      $("rows").addEventListener("change", (e)=>{
+        if (!e.target) return;
+        if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
+      });
 
-    $("snapWeekly").addEventListener("click", async ()=>{
-      pullInputsIntoState();
-      const c2 = calcAndRender(state);
-      await addSnapshot("weekly", state, c2);
-      const fresh = await apiGet("getAll");
-      if (!fresh.error) renderSnapshots(fresh.snapshots || []);
-    });
+      $("snapDaily").addEventListener("click", async ()=>{
+        pullInputsIntoState();
+        const c2 = calcAndRender(state);
+        await addSnapshot("daily", state, c2);
+        const fresh = await apiGet("getAll");
+        if (!fresh.error) renderSnapshots(fresh.snapshots || []);
+      });
 
-    // SAVE NOTE (fixed)
-    $("saveNote").addEventListener("click", async ()=>{
-      const text = ($("notes").value || "").trim();
-      if (!text) return;
+      $("snapWeekly").addEventListener("click", async ()=>{
+        pullInputsIntoState();
+        const c2 = calcAndRender(state);
+        await addSnapshot("weekly", state, c2);
+        const fresh = await apiGet("getAll");
+        if (!fresh.error) renderSnapshots(fresh.snapshots || []);
+      });
 
-      setSync("SAVING…");
-      showErr(false);
+      $("saveNote").addEventListener("click", async ()=>{
+        const text = ($("notes").value || "").trim();
+        if (!text) return;
 
-      const res = await apiPost("addNote", { note: text });
-      if (!(res && res.ok)) {
-        setSync("SAVE FAILED");
-        showErr(true);
-        console.log("addNote failed:", res);
-        return;
-      }
+        setSync("SAVING…");
+        showErr(false);
 
-      $("notes").value = ""; // clear so you know it saved
-      setSync("CONNECTED");
+        const res = await apiPost("addNote", { note: text });
+        if (!(res && res.ok)) {
+          setSync(res && res.error === "unauthorized" ? "LOCKED" : "ERROR");
+          showErr(res && res.error !== "unauthorized");
+          console.log("addNote failed:", res);
+          return;
+        }
 
-      const fresh = await apiGet("getAll");
-      if (fresh && !fresh.error) renderNotes(fresh.notes || []);
-      else {
-        showErr(true);
-        console.log("refresh getAll after note failed:", fresh);
-      }
-    });
+        $("notes").value = "";
+        setSync("CONNECTED");
+
+        const fresh = await apiGet("getAll");
+        if (!fresh.error) renderNotes(fresh.notes || []);
+      });
+
+      $("loginBtn").addEventListener("click", async ()=>{
+        const pass = prompt("PASSCODE:");
+        if (!pass) return;
+        sessionStorage.setItem(TOKEN_KEY, pass);
+        $("loginBtn").style.display = "none";
+        $("logoutBtn").style.display = "";
+        await loadAll();
+      });
+
+      $("logoutBtn").addEventListener("click", ()=>{
+        sessionStorage.removeItem(TOKEN_KEY);
+        $("logoutBtn").style.display = "none";
+        $("loginBtn").style.display = "";
+        setSync("LOCKED");
+        enableUI(false);
+      });
+    }
   }
 
-  boot();
+  // initial boot
+  if (token()){
+    $("loginBtn").style.display = "none";
+    $("logoutBtn").style.display = "";
+  }
+  loadAll();
 })();
 </script>
 </body>
