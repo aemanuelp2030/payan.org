@@ -252,7 +252,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
 
 <script>
 (() => {
-  // Your Apps Script Web App /exec URL
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHUYAzQBNE5qQXOs07z7Gg_d78qZOb4WNCirHBeJOSSRcOMMx-NxWqHTTzTZOvFmjo3w/exec";
   const TOKEN_KEY = "emanuel_burn_token_session";
   const $ = (id) => document.getElementById(id);
@@ -285,7 +284,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     catch { return { error:"bad_json", text }; }
   }
 
-  // CORS-safe POST: NO headers
   async function apiPost(action, payload){
     const res = await fetch(SCRIPT_URL, {
       method: "POST",
@@ -373,7 +371,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
       .replace(/'/g,"&#039;");
   }
 
-  // FIXED: proper classes (.item/.note) so autosave works
   function renderTable(state){
     const tbody = $("rows");
     tbody.innerHTML = "";
@@ -527,7 +524,6 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     $("nw90").textContent      = money(c.nw90);
     $("nw365").textContent     = money(c.nw365);
 
-    // burn countdown seconds (cashAfter / dailyBurn)
     window.__burnCountdownSeconds = isFinite(c.runway1) ? Math.floor(c.runway1 * 86400) : Infinity;
     $("burnCountdown").textContent = secondsToDHMS(window.__burnCountdownSeconds);
 
@@ -713,28 +709,44 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
     }, 450);
   }
 
+  // ✅ FIXED wireOnce (this was breaking your entire script)
+  let wired = false;
   function wireOnce(){
-    $("rows").addEventListener("input", ()=>{
-  if (!state) return;
+    if (wired) return;
+    wired = true;
 
-  // update state + recalc immediately so totals change right away
-  pullInputsIntoState(state);
-  renderCalc(state);
-
-  // then debounce save to Sheets
-  scheduleSave();
-});
-
-$("rows").addEventListener("change", ()=>{
-  if (!state) return;
-  pullInputsIntoState(state);
-  renderCalc(state);
-  scheduleSave();
-});
-
-      }
+    // Inputs that affect totals
+    ["includeSaul","avgIncome","inflow","cash","assetLiquid","assetOther","liabDebt"].forEach(id=>{
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        if (!state) return;
+        pullInputsIntoState(state);
+        renderCalc(state);
+        scheduleSave();
+      });
+      el.addEventListener("change", () => {
+        if (!state) return;
+        pullInputsIntoState(state);
+        renderCalc(state);
+        scheduleSave();
+      });
     });
-    $("rows").addEventListener("change", scheduleSave);
+
+    // Row edits
+    $("rows").addEventListener("input", ()=>{
+      if (!state) return;
+      pullInputsIntoState(state);
+      renderCalc(state);
+      scheduleSave();
+    });
+
+    $("rows").addEventListener("change", ()=>{
+      if (!state) return;
+      pullInputsIntoState(state);
+      renderCalc(state);
+      scheduleSave();
+    });
 
     $("rows").addEventListener("click", (e)=>{
       const btn = e.target;
@@ -752,6 +764,7 @@ $("rows").addEventListener("change", ()=>{
       state.rows.push({cat:"", item:"", amount:0, due:"", notes:"", as:"you"});
       renderTable(state);
       enableUI(true);
+      renderCalc(state);
       scheduleSave();
     });
 
@@ -855,7 +868,7 @@ $("rows").addEventListener("change", ()=>{
     if (empty) await pushState(state);
   }
 
-  // burn countdown tick (DD:HH:MM:SS)
+  // burn countdown tick
   setInterval(()=>{
     const s = window.__burnCountdownSeconds;
     if (s == null || !isFinite(s)) return;
@@ -874,4 +887,3 @@ $("rows").addEventListener("change", ()=>{
 </script>
 </body>
 </html>
-
