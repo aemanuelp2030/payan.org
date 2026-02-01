@@ -714,23 +714,24 @@ Net Worth              : <span class="blue" id="netWorth">—</span>
   }
 
   function wireOnce(){
-    if (wireOnce._wired) return;
-    wireOnce._wired = true;
+    $("rows").addEventListener("input", ()=>{
+  if (!state) return;
 
-    ["includeSaul","avgIncome","inflow","cash","assetLiquid","assetOther","liabDebt"].forEach(id=>{
-      $(id).addEventListener("input", scheduleSave);
-      $(id).addEventListener("change", scheduleSave);
-    });
+  // update state + recalc immediately so totals change right away
+  pullInputsIntoState(state);
+  renderCalc(state);
 
-    $("rows").addEventListener("input", (e)=>{
-      if (!e.target) return;
-      if (e.target.classList.contains("cat") ||
-          e.target.classList.contains("item") ||
-          e.target.classList.contains("amt") ||
-          e.target.classList.contains("due") ||
-          e.target.classList.contains("note") ||
-          e.target.classList.contains("as")) {
-        scheduleSave();
+  // then debounce save to Sheets
+  scheduleSave();
+});
+
+$("rows").addEventListener("change", ()=>{
+  if (!state) return;
+  pullInputsIntoState(state);
+  renderCalc(state);
+  scheduleSave();
+});
+
       }
     });
     $("rows").addEventListener("change", scheduleSave);
