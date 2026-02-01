@@ -1,34 +1,28 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Emanuel Payan | Decade</title>
 
 <style>
   html, body {
     margin: 0;
-    height: 100%;
     background: #000;
     color: #fff;
     font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
     font-size: 15px;
   }
 
-  .wrap { padding: 20px; }
-
-  .top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 18px;
+  .wrap {
+    padding: 20px;
+    max-width: 980px;
   }
 
   .title {
+    margin-bottom: 20px;
     font-weight: normal;
     letter-spacing: .5px;
-    white-space: nowrap;
   }
 
   .title a {
@@ -36,119 +30,49 @@
     text-decoration: none;
   }
 
-  .nav {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+  h1, h2 {
+    font-weight: normal;
+    letter-spacing: .5px;
   }
 
-  .nav a {
-    color: #fff;
-    text-decoration: none;
+  h1 {
+    font-size: 18px;
+    margin: 24px 0 10px;
   }
 
-  .hint {
-    color: #bbb;
-    line-height: 1.5;
-    margin: 12px 0 18px;
-    max-width: 900px;
+  h2 {
+    font-size: 16px;
+    margin: 22px 0 6px;
   }
 
-  .controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
+  p {
+    line-height: 1.6;
+    margin: 10px 0;
+    color: #ddd;
   }
 
-  button {
-    background: #000;
-    color: #fff;
-    border: 1px solid #333;
-    padding: 8px 10px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-  }
-  button:hover { border-color: #555; }
-
-  input[type="text"]{
-    background:#000;
-    color:#fff;
-    border:1px solid #333;
-    padding:8px 10px;
-    font-family: inherit;
-    font-size: 14px;
-    min-width: 240px;
+  .year {
+    border-top: 1px solid #222;
+    padding-top: 16px;
+    margin-top: 20px;
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    max-width: 980px;
+  .label {
+    color: #aaa;
+    width: 90px;
+    display: inline-block;
   }
 
-  details {
-    border: 1px solid #222;
-    padding: 10px 12px;
-  }
-
-  summary {
-    cursor: pointer;
-    list-style: none;
-    outline: none;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  summary::-webkit-details-marker { display: none; }
-
-  .year { letter-spacing: .5px; }
-
-  .badge {
-    color: #bbb;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  textarea {
-    width: 100%;
-    min-height: 180px;
-    resize: vertical;
-    background: #000;
-    color: #fff;
-    border: 1px solid #333;
-    padding: 10px;
-    margin-top: 10px;
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.55;
-    box-sizing: border-box;
-  }
-
-  .row {
-    display:flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-
-  .ok {
-    color: #00ff7f;
-    font-size: 13px;
-    margin-top: 10px;
-    display: none;
-  }
-
-  .footer {
-    margin-top: 18px;
+  .status {
+    margin-top: 6px;
     color: #777;
-    font-size: 13px;
-    line-height: 1.5;
-    max-width: 980px;
+  }
+
+  .end {
+    margin-top: 30px;
+    padding-top: 16px;
+    border-top: 1px solid #222;
+    font-weight: normal;
   }
 </style>
 </head>
@@ -156,135 +80,132 @@
 <body>
 <div class="wrap">
 
-  <div class="top">
-    <div class="title">
-      Emanuel Payan |
-      <a href="decade.html">Decade</a>
+  <!-- HEADER -->
+  <div class="title">
+    Emanuel Payan |
+    <a href="index.html">Home</a> |
+    <a href="decade.html">Decade</a> |
+    <a href="burn.html">Burn</a>
+  </div>
+
+  <h1>Decade Plan | Age 20 to Age 30</h1>
+
+  <p>
+    As you take a step, the next step is illuminated. In the beginning you must be directionally correct.
+  </p>
+
+  <p>
+    Over the next 10 years the impact I have on reality will be objectively measured.
+    Skill acquisition and capital compounding will act as the main drivers here.
+    Theory of Constraints identifies the points of greatest leverage.
+  </p>
+
+  <!-- YEAR 1 -->
+  <div class="year">
+    <h2>Year 1 (August 2024 – August 2025)</h2>
+    <div><span class="label">Income</span>$12k/mo</div>
+    <div><span class="label">Skill</span>Lead Nurture Sales</div>
+    <div><span class="label">Objective</span>Learn</div>
+    <div><span class="label">Place</span>Honda of Vallejo</div>
+    <div class="status">Completed</div>
+  </div>
+
+  <!-- YEAR 2 -->
+  <div class="year">
+    <h2>Year 2 (August 2025 – August 2026)</h2>
+    <div><span class="label">Income</span>$25k/mo</div>
+    <div><span class="label">Skills</span>
+      Lead Nurture Sales · Deal Structure · Lending · Paid Advertising · Free Media
     </div>
-    <div class="nav">
-      <a href="index.html">Home</a>
-      <span>|</span>
-      <a href="decade.html">Decade</a>
-      <span>|</span>
-      <a href="burn.html">Burn</a>
+    <div><span class="label">Objective</span>Close 15 Real Estate Deals</div>
+    <div><span class="label">Place</span>Active Realty Team – Los Angeles</div>
+    <div class="status">Upcoming</div>
+  </div>
+
+  <!-- YEAR 3 -->
+  <div class="year">
+    <h2>Year 3 (August 2026 – August 2027)</h2>
+    <div><span class="label">Skill</span>Lead Generation · Marketing</div>
+    <div><span class="label">Objective</span>Learn</div>
+    <div><span class="label">Place</span>Real Estate Brokerage – Los Angeles</div>
+    <div class="status">Upcoming</div>
+  </div>
+
+  <!-- YEAR 4 -->
+  <div class="year">
+    <h2>Year 4 (August 2027 – August 2028)</h2>
+    <div><span class="label">Skill</span>Recruiting · Product</div>
+    <div><span class="label">Objective</span>Open Real Estate Brokerage (VIRELLO)</div>
+    <div><span class="label">Place</span>Los Angeles</div>
+    <div class="status">Upcoming</div>
+  </div>
+
+  <!-- YEAR 5 -->
+  <div class="year">
+    <h2>Year 5 (August 2028 – August 2029)</h2>
+    <div><span class="label">Skill</span>Operations</div>
+    <div><span class="label">Objective</span>Learn</div>
+    <div><span class="label">Place</span>Los Angeles</div>
+    <div class="status">Upcoming</div>
+  </div>
+
+  <!-- YEAR 6 -->
+  <div class="year">
+    <h2>Year 6 (August 2029 – August 2030)</h2>
+    <div><span class="label">Skill</span>Product</div>
+    <div><span class="label">Objective</span>
+      Trim fat · Hire executives · Create Decade Model · Prepare for scale
     </div>
+    <div><span class="label">Place</span>Los Angeles</div>
+    <div class="status">Upcoming</div>
   </div>
 
-  <div class="hint">
-    This is your decade board. Click a year, edit the plan, hit <b>Save</b>. It persists in your browser.
+  <!-- YEAR 7 -->
+  <div class="year">
+    <h2>Year 7 (August 2030 – August 2031)</h2>
+    <div><span class="label">Skill</span>Acquisitions</div>
+    <div><span class="label">Objective</span>
+      Buy other brokerages and own their agents. Learn.
+    </div>
+    <div><span class="label">Place</span>San Francisco & Los Angeles</div>
+    <div class="status">Upcoming</div>
   </div>
 
-  <div class="controls">
-    <input id="theme" type="text" placeholder="Theme line (example: Volume negates luck.)" />
-    <button id="saveTheme">Save theme</button>
-    <button id="expandAll">Expand all</button>
-    <button id="collapseAll">Collapse all</button>
-    <button id="resetAll">Reset to defaults</button>
+  <!-- YEAR 8 -->
+  <div class="year">
+    <h2>Year 8 (August 2031 – August 2032)</h2>
+    <div><span class="label">Skill</span>Acquisitions</div>
+    <div><span class="label">Objective</span>Earn</div>
+    <div><span class="label">Place</span>San Francisco & Los Angeles</div>
+    <div class="status">Upcoming</div>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <!-- YEAR 9 -->
+  <div class="year">
+    <h2>Year 9 (August 2032 – August 2033)</h2>
+    <div><span class="label">Skill</span>Scale</div>
+    <div><span class="label">Objective</span>
+      Increase TAM across California → expand into surrounding states
+    </div>
+    <div><span class="label">Place</span>Nationwide</div>
+    <div class="status">Upcoming</div>
+  </div>
 
-  <div class="footer">
-    Stored locally via <code>localStorage</code>. Clear browser data to reset.
+  <!-- YEAR 10 -->
+  <div class="year">
+    <h2>Year 10 (August 2033 – August 2034)</h2>
+    <div><span class="label">Skill</span>Scale</div>
+    <div><span class="label">Objective</span>Own all 50 States</div>
+    <div><span class="label">Place</span>Nationwide</div>
+    <div class="status">Upcoming</div>
+  </div>
+
+  <div class="end">
+    End of Decade Net Worth: $1 Billion<br>
+    Volume × Leverage = Output.
   </div>
 
 </div>
-
-<script>
-(() => {
-  const START_YEAR = 2026;
-  const END_YEAR = 2036;
-  const LS_KEY = "decade.plan.v1";
-  const LS_THEME = "decade.theme.v1";
-
-  const DEFAULTS = { theme: "Volume negates luck.", years: {} };
-
-  for (let y = START_YEAR; y <= END_YEAR; y++) {
-    DEFAULTS.years[y] =
-`THEME:
-- 
-
-INCOME TARGET:
-- $
-
-PRIMARY GAME:
-- Car sales
-
-NON-NEGOTIABLES:
-- Track every up
-- Follow up daily
-
-SYSTEMS:
--
-
-NOTES:
--`;
-  }
-
-  function load() {
-    const raw = localStorage.getItem(LS_KEY);
-    const theme = localStorage.getItem(LS_THEME);
-    let data = {};
-    try { data = raw ? JSON.parse(raw) : {}; } catch {}
-    return {
-      theme: theme || DEFAULTS.theme,
-      years: { ...DEFAULTS.years, ...(data.years || {}) }
-    };
-  }
-
-  function saveYears(years) {
-    localStorage.setItem(LS_KEY, JSON.stringify({ years }));
-  }
-
-  const state = load();
-  const grid = document.getElementById("grid");
-  const themeInput = document.getElementById("theme");
-  themeInput.value = state.theme;
-
-  for (let y = START_YEAR; y <= END_YEAR; y++) {
-    const d = document.createElement("details");
-    d.open = y === START_YEAR;
-
-    const s = document.createElement("summary");
-    s.innerHTML = `<span class="year">${y}</span><span class="badge">edit</span>`;
-
-    const ta = document.createElement("textarea");
-    ta.value = state.years[y];
-
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const save = document.createElement("button");
-    save.textContent = "Save";
-    save.onclick = () => {
-      state.years[y] = ta.value;
-      saveYears(state.years);
-    };
-
-    row.appendChild(save);
-
-    d.appendChild(s);
-    d.appendChild(ta);
-    d.appendChild(row);
-    grid.appendChild(d);
-  }
-
-  document.getElementById("saveTheme").onclick = () => {
-    localStorage.setItem(LS_THEME, themeInput.value.trim());
-  };
-
-  document.getElementById("expandAll").onclick = () =>
-    document.querySelectorAll("details").forEach(d => d.open = true);
-
-  document.getElementById("collapseAll").onclick = () =>
-    document.querySelectorAll("details").forEach(d => d.open = false);
-
-  document.getElementById("resetAll").onclick = () => {
-    localStorage.clear();
-    location.reload();
-  };
-})();
-</script>
-
 </body>
 </html>
+
