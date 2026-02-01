@@ -25,9 +25,25 @@
     letter-spacing: .5px;
   }
 
+  /* two timers row */
+  .timers {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    margin-bottom: 28px; /* replaces old timer margin */
+  }
+
   .timer {
     line-height: 1.6;
-    margin-bottom: 28px;
+    margin-bottom: 0;
+    min-width: 280px;
+  }
+
+  .timer-heading {
+    margin-bottom: 8px;
+    font-weight: normal;
+    letter-spacing: .3px;
   }
 
   .label {
@@ -49,7 +65,7 @@
     opacity: 0;
     transition: opacity 0.6s linear;
     max-width: 760px;
-    color: #007BFF; 
+    color: #007BFF;
   }
 
   .fadeout {
@@ -74,16 +90,32 @@
   <!-- HEADER -->
   <div class="title">Emanuel Payan | Decade</div>
 
-  <!-- COUNTDOWN TIMER -->
-  <div class="timer">
-    <div><span class="label">YEARS</span>: <span class="val" id="y">0</span></div>
-    <div><span class="label">MONTHS</span>: <span class="val" id="mo">0</span></div>
-    <div><span class="label">DAYS</span>: <span class="val" id="d">0</span></div>
-    <div><span class="label">HOURS</span>: <span class="val" id="h">0</span></div>
-    <div><span class="label">MINUTES</span>: <span class="val" id="mi">0</span></div>
-    <div><span class="label">SECONDS</span>: <span class="val" id="s">0</span></div>
-    <br>
-    <div id="target"></div>
+  <div class="timers">
+    <!-- LEFT: COUNTDOWN TIMER -->
+    <div class="timer">
+      <div class="timer-heading">COUNTDOWN</div>
+      <div><span class="label">YEARS</span>: <span class="val" id="y">0</span></div>
+      <div><span class="label">MONTHS</span>: <span class="val" id="mo">0</span></div>
+      <div><span class="label">DAYS</span>: <span class="val" id="d">0</span></div>
+      <div><span class="label">HOURS</span>: <span class="val" id="h">0</span></div>
+      <div><span class="label">MINUTES</span>: <span class="val" id="mi">0</span></div>
+      <div><span class="label">SECONDS</span>: <span class="val" id="s">0</span></div>
+      <br>
+      <div id="target"></div>
+    </div>
+
+    <!-- RIGHT: ELAPSED TIMER -->
+    <div class="timer" style="text-align:right;">
+      <div class="timer-heading">ELAPSED</div>
+      <div><span class="label">YEARS</span>: <span class="val" id="ey">0</span></div>
+      <div><span class="label">MONTHS</span>: <span class="val" id="emo">0</span></div>
+      <div><span class="label">DAYS</span>: <span class="val" id="ed">0</span></div>
+      <div><span class="label">HOURS</span>: <span class="val" id="eh">0</span></div>
+      <div><span class="label">MINUTES</span>: <span class="val" id="emi">0</span></div>
+      <div><span class="label">SECONDS</span>: <span class="val" id="es">0</span></div>
+      <br>
+      <div id="start"></div>
+    </div>
   </div>
 
   <!-- ROTATING TEXT -->
@@ -96,10 +128,11 @@
 <script>
 (() => {
 
-  /* TARGET DATE */
-  const TARGET = new Date('2036-01-01T00:00:00');
+  /* DATES */
+  const TARGET = new Date('2036-01-01T00:00:00'); // countdown target
+  const START  = new Date('2026-01-01T00:00:00'); // elapsed start (EDIT THIS)
 
-  /* TIMER */
+  /* COUNTDOWN DOM */
   const t = {
     y: document.getElementById('y'),
     mo: document.getElementById('mo'),
@@ -110,17 +143,38 @@
     target: document.getElementById('target')
   };
 
-  function diffParts(now, target) {
-    if (target <= now) return {y:0, mo:0, d:0, h:0, mi:0, s:0};
+  /* ELAPSED DOM */
+  const e = {
+    y: document.getElementById('ey'),
+    mo: document.getElementById('emo'),
+    d: document.getElementById('ed'),
+    h: document.getElementById('eh'),
+    mi: document.getElementById('emi'),
+    s: document.getElementById('es'),
+    start: document.getElementById('start')
+  };
 
-    let c = new Date(now), y = 0, mo = 0;
+  function fmt(dt){
+    return dt.getFullYear() + '-' +
+      String(dt.getMonth()+1).padStart(2,'0') + '-' +
+      String(dt.getDate()).padStart(2,'0') + ' ' +
+      String(dt.getHours()).padStart(2,'0') + ':' +
+      String(dt.getMinutes()).padStart(2,'0') + ':' +
+      String(dt.getSeconds()).padStart(2,'0');
+  }
+
+  // Calendar-accurate forward diff: from -> to (years/months then remainder in days/h/m/s)
+  function diffForward(from, to) {
+    if (to <= from) return {y:0, mo:0, d:0, h:0, mi:0, s:0};
+
+    let c = new Date(from), y = 0, mo = 0;
     const addY = d => new Date(d.getFullYear()+1, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
     const addM = d => new Date(d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
 
-    while (addY(c) <= target) { c = addY(c); y++; }
-    while (addM(c) <= target) { c = addM(c); mo++; }
+    while (addY(c) <= to) { c = addY(c); y++; }
+    while (addM(c) <= to) { c = addM(c); mo++; }
 
-    let s = Math.floor((target - c) / 1000);
+    let s = Math.floor((to - c) / 1000);
     const d = Math.floor(s / 86400); s %= 86400;
     const h = Math.floor(s / 3600); s %= 3600;
     const mi = Math.floor(s / 60); s %= 60;
@@ -128,27 +182,33 @@
     return {y, mo, d, h, mi, s};
   }
 
-  function tickTimer() {
-    const r = diffParts(new Date(), TARGET);
-    t.y.textContent = r.y;
-    t.mo.textContent = r.mo;
-    t.d.textContent = r.d;
-    t.h.textContent = r.h;
-    t.mi.textContent = r.mi;
-    t.s.textContent = r.s;
+  function tickTimers() {
+    const now = new Date();
+
+    // countdown: now -> TARGET
+    const c = diffForward(now, TARGET);
+    t.y.textContent  = c.y;
+    t.mo.textContent = c.mo;
+    t.d.textContent  = c.d;
+    t.h.textContent  = c.h;
+    t.mi.textContent = c.mi;
+    t.s.textContent  = c.s;
+
+    // elapsed: START -> now
+    const a = diffForward(START, now);
+    e.y.textContent  = a.y;
+    e.mo.textContent = a.mo;
+    e.d.textContent  = a.d;
+    e.h.textContent  = a.h;
+    e.mi.textContent = a.mi;
+    e.s.textContent  = a.s;
   }
 
-  t.target.textContent =
-    'TARGET: ' +
-    TARGET.getFullYear() + '-' +
-    String(TARGET.getMonth()+1).padStart(2,'0') + '-' +
-    String(TARGET.getDate()).padStart(2,'0') + ' ' +
-    String(TARGET.getHours()).padStart(2,'0') + ':' +
-    String(TARGET.getMinutes()).padStart(2,'0') + ':' +
-    String(TARGET.getSeconds()).padStart(2,'0');
+  t.target.textContent = 'TARGET: ' + fmt(TARGET);
+  e.start.textContent  = 'START:  ' + fmt(START);
 
-  tickTimer();
-  setInterval(tickTimer, 1000);
+  tickTimers();
+  setInterval(tickTimers, 1000);
 
   /* FULL MESSAGE SET */
   const lineEl = document.getElementById('line');
