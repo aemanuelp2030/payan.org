@@ -27,6 +27,11 @@
   .label {
     display: inline-block;
     width: 90px;
+    color: #fff;
+  }
+
+  .val {
+    color: #007BFF; /* blue */
   }
 
   h1 {
@@ -36,6 +41,7 @@
     opacity: 0;
     transition: opacity 0.6s linear;
     max-width: 760px;
+    color: #007BFF; /* blue rotating text */
   }
 
   .fadeout {
@@ -59,12 +65,12 @@
 
   <!-- COUNTDOWN TIMER -->
   <div class="timer">
-    <div><span class="label">YEARS</span>: <span id="y">0</span></div>
-    <div><span class="label">MONTHS</span>: <span id="mo">0</span></div>
-    <div><span class="label">DAYS</span>: <span id="d">0</span></div>
-    <div><span class="label">HOURS</span>: <span id="h">0</span></div>
-    <div><span class="label">MINUTES</span>: <span id="mi">0</span></div>
-    <div><span class="label">SECONDS</span>: <span id="s">0</span></div>
+    <div><span class="label">YEARS</span>: <span class="val" id="y">0</span></div>
+    <div><span class="label">MONTHS</span>: <span class="val" id="mo">0</span></div>
+    <div><span class="label">DAYS</span>: <span class="val" id="d">0</span></div>
+    <div><span class="label">HOURS</span>: <span class="val" id="h">0</span></div>
+    <div><span class="label">MINUTES</span>: <span class="val" id="mi">0</span></div>
+    <div><span class="label">SECONDS</span>: <span class="val" id="s">0</span></div>
     <br>
     <div id="target"></div>
   </div>
@@ -79,10 +85,10 @@
 <script>
 (() => {
 
-  /* ================= TARGET DATE ================= */
-  const TARGET = new Date('2036-01-01T00:00:00');
+  /* TARGET DATE */
+  const TARGET = new Date('2030-01-01T00:00:00');
 
-  /* ================= TIMER ================= */
+  /* TIMER */
   const t = {
     y: document.getElementById('y'),
     mo: document.getElementById('mo'),
@@ -96,16 +102,14 @@
   function diffParts(now, target) {
     if (target <= now) return {y:0, mo:0, d:0, h:0, mi:0, s:0};
 
-    let cursor = new Date(now);
-    let y = 0, mo = 0;
-
+    let c = new Date(now), y = 0, mo = 0;
     const addY = d => new Date(d.getFullYear()+1, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
     const addM = d => new Date(d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
 
-    while (addY(cursor) <= target) { cursor = addY(cursor); y++; }
-    while (addM(cursor) <= target) { cursor = addM(cursor); mo++; }
+    while (addY(c) <= target) { c = addY(c); y++; }
+    while (addM(c) <= target) { c = addM(c); mo++; }
 
-    let s = Math.floor((target - cursor) / 1000);
+    let s = Math.floor((target - c) / 1000);
     const d = Math.floor(s / 86400); s %= 86400;
     const h = Math.floor(s / 3600); s %= 3600;
     const mi = Math.floor(s / 60); s %= 60;
@@ -135,9 +139,8 @@
   tickTimer();
   setInterval(tickTimer, 1000);
 
-  /* ================= FULL MESSAGE SET ================= */
+  /* FULL MESSAGE SET */
   const lineEl = document.getElementById('line');
-
   const msgs = [
 `The world is yours.`,
 `nothing ventured, nothing gained.`,
@@ -257,9 +260,7 @@
   }
 
   (async function run() {
-    for (const m of shuffle(msgs)) {
-      await show(m);
-    }
+    for (const m of shuffle(msgs)) await show(m);
     const fade = document.getElementById('fade');
     fade.classList.add('active');
     await wait(2000);
@@ -274,3 +275,4 @@
 
 </body>
 </html>
+
