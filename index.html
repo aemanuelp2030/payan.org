@@ -15,17 +15,6 @@
     font-size: 15px;
   }
 
-  /* center burn link */
-  .nav-center{
-    text-align:center;
-    margin: 12px 0 18px;
-  }
-  .nav-center a{
-    color:#fff;
-    text-decoration:none;   /* no underline */
-    border-bottom:none;     /* no underline */
-  }
-
   .wrap {
     padding: 20px;
   }
@@ -36,13 +25,18 @@
     letter-spacing: .5px;
   }
 
+  .title a{
+    color:#fff;
+    text-decoration:none;
+  }
+
   /* two timers row */
   .timers {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 40px;
-    margin-bottom: 28px; /* replaces old timer margin */
+    margin-bottom: 28px;
   }
 
   .timer {
@@ -63,12 +57,11 @@
     color: #fff;
   }
 
-  /* TIMER VALUES STAY WHITE */
   .val {
     color: #fff;
   }
 
-  /* ROTATING TEXT BLUE ONLY */
+  /* ROTATING TEXT */
   h1 {
     font-weight: normal;
     white-space: pre-wrap;
@@ -96,15 +89,12 @@
 
 <body>
 
-<!-- centered link -->
-<div class="nav-center">
-  <a href="burn.html">Burn</a>
-</div>
-
 <div class="wrap">
 
   <!-- HEADER -->
-  <div class="title">Emanuel Payan | Decade</div>
+  <div class="title">
+    Emanuel Payan | Decade | <a href="burn.html">Burn</a>
+  </div>
 
   <div class="timers">
     <!-- LEFT: COUNTDOWN TIMER -->
@@ -144,11 +134,9 @@
 <script>
 (() => {
 
-  /* DATES */
-  const TARGET = new Date('2036-01-01T00:00:00'); // countdown target
-  const START  = new Date('2026-01-22T22:30:00'); // elapsed start (EDIT THIS)
+  const TARGET = new Date('2036-01-01T00:00:00');
+  const START  = new Date('2026-01-22T22:30:00');
 
-  /* COUNTDOWN DOM */
   const t = {
     y: document.getElementById('y'),
     mo: document.getElementById('mo'),
@@ -159,7 +147,6 @@
     target: document.getElementById('target')
   };
 
-  /* ELAPSED DOM */
   const e = {
     y: document.getElementById('ey'),
     mo: document.getElementById('emo'),
@@ -179,7 +166,6 @@
       String(dt.getSeconds()).padStart(2,'0');
   }
 
-  // Calendar-accurate forward diff: from -> to (years/months then remainder in days/h/m/s)
   function diffForward(from, to) {
     if (to <= from) return {y:0, mo:0, d:0, h:0, mi:0, s:0};
 
@@ -201,7 +187,6 @@
   function tickTimers() {
     const now = new Date();
 
-    // countdown: now -> TARGET
     const c = diffForward(now, TARGET);
     t.y.textContent  = c.y;
     t.mo.textContent = c.mo;
@@ -210,7 +195,6 @@
     t.mi.textContent = c.mi;
     t.s.textContent  = c.s;
 
-    // elapsed: START -> now
     const a = diffForward(START, now);
     e.y.textContent  = a.y;
     e.mo.textContent = a.mo;
@@ -226,7 +210,6 @@
   tickTimers();
   setInterval(tickTimers, 1000);
 
-  /* FULL MESSAGE SET */
   const lineEl = document.getElementById('line');
   const msgs = [
 `The world is yours.`,
@@ -243,85 +226,17 @@
 `All arbitrage lies in the uncertain and delayed.`,
 `I had a near life experience once.`,
 `Winners and Losers have the same goals.`,
-`Wow that worked out well for him, I wonder who's fault it is?`,
 `All great things come with risk, to risk nothing is to guarantee failure.`,
-`Where there is joy there is suffering, where there is suffering there is potential for joy.`,
-`It is neither good nor bad.`,
 `It is just weather.`,
 `No man rules alone.`,
-`I do this for the love of the game.`,
-`Conqueror.`,
-`Born clean is the wild dog.`,
-`He will slaughter weeping at his sin, his cries will go unheard.`,
-`Culpable only by teeth, by hunger.`,
-`Weeping once more, condemned by nature.`,
-`Instinct, unbound by morality.`,
-`It cannot purify him.`,
-`If I reek of ancestral bravery is my fear ancestral too?`,
-`Do not love sleep or you will grow poor.`,
-`The world tries to teach me the taste of the fall.`,
-`Fair only exists in a child's imagination.`,
-`Human nature is timeless.`,
-`The air is new.`,
-`Perceived volatility = Insufficient volume.`,
-`I am not doing enough.`,
-`Win some, Win some.`,
-`I could be doing more.`,
-`If anyone is not willing to work, let him not eat.`,
-`Simultaneously lamb and slaughterhouse.`,
-`There is no turning back.`,
-`You would be better off if your situation was worse because then you would be forced to change.`,
-`All fears boil down to death.`,
-`Treat your attention like gold.`,
-`It is easy to dismiss things you cannot obtain.`,
-`Those grapes are probably sour anyway.`,
-`In life we must choose our regrets.`,
-`The pursuit is all there is.`,
-`Cast a shadow over everyone.`,
-`You do not need to deserve it, you can have it anyways.`,
-`You live out reflections of what you think other people want you to do. Coward.`,
-`Do you want sympathy for your failures?`,
-`You are the output of the work.`,
-`Lack of certainty makes it worth it.`,
-`There are no shortcuts for you.`,
-`No greater waste of time than to justify your actions to people who live a life you do not desire.`,
-`Timeless.`,
-`This is a game of outliers.`,
-`Victory is inevitable.`,
-`People choose to be poor.`,
-`Excellence attracts excellence.`,
-`It cost me everything.`,
 `Volume negates luck.`,
-`Behind mountains are more mountains.`,
 `Stagnation is death.`,
-`Nothing can be gained without sacrifice.`,
-`The pursuit itself is all there is to gain.`,
 `No one is coming to save you.`,
 `What you do next matters more than what you did last.`,
-`Become ungovernable.`,
+`Victory is inevitable.`,
 `Force reality to conform.`,
 `All outcomes are my fault.`,
 `Drive burn rate to zero.`,
-`Attention is the scarce input.`,
-`There are no limits, only those who accept them.`,
-`Who's not entertained my pain`,
-`Until death all defeat is psychological.`,
-`In all labor there is profit.`,
-`Move Mountains `,
-`Relentless.`,
-`Pragmatic.`,
-`Unreasonable.`,
-`Reality tends to reorganize around your decisions.`,
-`If your plan requires luck it's a bad plan.`,
-`Make mistakes of ambition, not mistakes of sloth.`,
-`No half measures.`,
-`Absolute returns > Relative returns.`,
-`Generate demand.`,
-`If you're tired of starting over, stop giving up.`,
-`You are not forced to change.`,
-`You can waste your entire life if you so choose.`,
-`Govern yourself accordingly.`,
-`Force all outcomes.`,
 `What is the next constraint?`
   ];
 
