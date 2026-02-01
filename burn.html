@@ -16,12 +16,14 @@
   }
   .wrap{ padding:20px; }
   .title{ margin-bottom:10px; font-weight:normal; letter-spacing:.5px; }
-  .meta{ margin-bottom:14px; line-height:1.6; opacity:.9; }
+  .meta{ margin-bottom:14px; line-height:1.6; opacity:.95; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
   .section{ margin:16px 0 8px; letter-spacing:.3px; }
   .grid{ display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; }
   .block{ min-width:320px; }
   .mono{ white-space:pre-wrap; line-height:1.6; }
   .blue{ color:#007BFF; }
+  .muted{ opacity:.85; }
 
   a{ color:#fff; text-decoration:none; }
 
@@ -32,10 +34,10 @@
     padding:4px 6px;
     font-family:inherit;
     font-size:15px;
-    width:160px;
+    width:170px;
     box-sizing:border-box;
   }
-  .input.small{ width:110px; }
+  .input.small{ width:120px; }
 
   .btn{
     background:#000;
@@ -46,21 +48,6 @@
     font-size:15px;
     cursor:pointer;
   }
-
-  table{
-    border-collapse:collapse;
-    width:100%;
-    max-width:1100px;
-  }
-  th, td{
-    border:1px solid #fff;
-    padding:6px 8px;
-    vertical-align:top;
-    font-weight:normal;
-  }
-  th{ text-align:left; }
-  td.num{ text-align:right; white-space:nowrap; }
-  td.notes{ width:30%; }
 
   select{
     background:#000;
@@ -82,6 +69,21 @@
     box-sizing:border-box;
   }
 
+  table{
+    border-collapse:collapse;
+    width:100%;
+    max-width:1100px;
+  }
+  th, td{
+    border:1px solid #fff;
+    padding:6px 8px;
+    vertical-align:top;
+    font-weight:normal;
+  }
+  th{ text-align:left; }
+  td.num{ text-align:right; white-space:nowrap; }
+  td.notes{ width:30%; }
+
   pre{
     margin:0;
     border:1px solid #fff;
@@ -89,9 +91,6 @@
     overflow:auto;
     max-width:1100px;
   }
-
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  .muted{ opacity:.85; }
 </style>
 </head>
 
@@ -100,11 +99,17 @@
   <div class="title">Emanuel Payan | Burn</div>
 
   <div class="meta">
-    <a href="index.html">Back</a><br>
+    <div class="row">
+      <a href="index.html">Back</a>
+      <span class="muted">|</span>
+      <button class="btn" id="loginBtn">LOGIN</button>
+      <button class="btn" id="logoutBtn" style="display:none;">LOGOUT</button>
+      <span class="muted">|</span>
+      SYNC: <span class="blue" id="sync">DISCONNECTED</span>
+    </div>
     LAST UPDATED: <span class="blue" id="lastUpdated">—</span><br>
-    SYNC: <span class="blue" id="sync">CONNECTING…</span><br>
     INCLUDE SAUL IN BURN:
-    <select id="includeSaul">
+    <select id="includeSaul" disabled>
       <option value="yes">YES</option>
       <option value="no">NO</option>
     </select>
@@ -113,15 +118,17 @@
   <div class="section">Inputs</div>
   <div class="grid">
     <div class="block mono">
-Avg Net Monthly Income : <input class="input" id="avgIncome" value="3464.00">
-One-Time Inflow (Saul) : <input class="input" id="inflow" value="3000.00">
-Cash on Hand (ref)     : <input class="input" id="cash" value="2578.89">
+Avg Net Monthly Income : <input class="input" id="avgIncome" value="3464.00" disabled>
+One-Time Inflow (Saul) : <input class="input" id="inflow" value="3000.00" disabled>
+Cash on Hand (ref)     : <input class="input" id="cash" value="2578.89" disabled>
     </div>
 
     <div class="block mono">
 Total Monthly Burn     : <span class="blue" id="burnTotal">—</span>
 Left / mo              : <span class="blue" id="leftMo">—</span>
 Daily Burn             : <span class="blue" id="daily">—</span>
+Weekly Burn            : <span class="blue" id="weekly">—</span>
+Burn / Year            : <span class="blue" id="yearly">—</span>
 Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     </div>
   </div>
@@ -146,8 +153,8 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
   <div class="section">Snapshots</div>
   <div class="row" style="margin-bottom:10px;">
-    <button class="btn" id="snapDaily">DAILY</button>
-    <button class="btn" id="snapWeekly">WEEKLY</button>
+    <button class="btn" id="snapDaily" disabled>DAILY</button>
+    <button class="btn" id="snapWeekly" disabled>WEEKLY</button>
     <span class="muted">Saved to Google Sheets.</span>
   </div>
 
@@ -187,10 +194,10 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
   <div class="section">Notes</div>
   <div class="row" style="margin-bottom:10px;">
-    <button class="btn" id="saveNote">SAVE NOTE</button>
+    <button class="btn" id="saveNote" disabled>SAVE NOTE</button>
     <span class="muted">Saved to Google Sheets.</span>
   </div>
-  <textarea rows="6" id="notes"></textarea>
+  <textarea rows="6" id="notes" disabled></textarea>
 
   <div class="section">Note History</div>
   <table>
@@ -206,19 +213,17 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
 <script>
 (() => {
-  // 1) PASTE your Apps Script web app URL here:
+  // PASTE YOUR APPS SCRIPT WEB APP URL HERE (must end with /exec)
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0_qcHexNqX5VIP3K1s3F41Az0dgE3AV-9MthY3JFGJisSHHccoFSDVQey0KhJ6eWYag/exec";
 
-  // Token is NOT hardcoded. It’s asked once per session.
   const TOKEN_KEY = "emanuel_burn_token_session";
-
   const $ = (id) => document.getElementById(id);
+
   const money = (n) => (isFinite(n) ? "$" + n.toFixed(2) : "—");
   const pad2 = (x) => String(x).padStart(2,"0");
   const ymd = (d) => d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
   const fmt = (d) => d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+
     " "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());
-
   function weekStartISO(d){
     const x = new Date(d);
     const day = (x.getDay()+6)%7; // Mon=0
@@ -227,64 +232,64 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     return ymd(x);
   }
 
+  function setSync(text){ $("sync").textContent = text; }
+  function enableUI(on){
+    ["includeSaul","avgIncome","inflow","cash","snapDaily","snapWeekly","saveNote","notes"].forEach(id=>{
+      $(id).disabled = !on;
+    });
+    $("loginBtn").style.display = on ? "none" : "";
+    $("logoutBtn").style.display = on ? "" : "none";
+  }
+
   async function apiGet(action){
     const token = sessionStorage.getItem(TOKEN_KEY) || "";
     const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token)}`;
     const res = await fetch(url, { cache: "no-cache" });
     return await res.json();
   }
-
   async function apiPost(action, payload){
     const token = sessionStorage.getItem(TOKEN_KEY) || "";
     const res = await fetch(SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type":"application/json" },
       body: JSON.stringify({ action, token, ...payload })
     });
     return await res.json();
   }
 
-  function ensureToken(){
-    let t = sessionStorage.getItem(TOKEN_KEY);
-    if (t) return t;
-    t = prompt("Burn passphrase:");
-    if (!t) return "";
-    sessionStorage.setItem(TOKEN_KEY, t);
-    return t;
-  }
-
-  // Minimal default (only used if sheet is empty)
   const DEFAULT = {
     includeSaul: "yes",
     avgIncome: 3464.00,
     inflow: 3000.00,
     cash: 2578.89,
     rows: [
+      {cat:"INCOME", item:"Hourly Wage", amount:20.00, due:"", notes:"40 hrs/week", as:"ignore"},
+      {cat:"INCOME", item:"Avg Net Monthly Income", amount:3464.00, due:"", notes:"Conservative base job", as:"ignore"},
+      {cat:"INCOME", item:"One-Time Inflow (Saul)", amount:3000.00, due:"25", notes:"Hits on 25th (non-recurring)", as:"ignore"},
+
       {cat:"LIVING", item:"Housing - Rent", amount:800.00, due:"01", notes:"Due 1st", as:"you"},
       {cat:"LIVING", item:"Internet", amount:20.00, due:"", notes:"Monthly", as:"you"},
       {cat:"LIVING", item:"Food", amount:650.00, due:"", notes:"Monthly", as:"you"},
-      {cat:"TRANSPORT", item:"Gas", amount:250.00, due:"", notes:"Monthly", as:"you"},
-      {cat:"TRANSPORT", item:"Car Payment #1", amount:369.89, due:"11", notes:"Due 11th", as:"you"},
-      {cat:"TRANSPORT", item:"Car Payment #2", amount:285.98, due:"17", notes:"Due 17th", as:"you"},
-      {cat:"FAMILY", item:"Discover (Saul)", amount:50.00, due:"10", notes:"Due 10th", as:"saul"},
-      {cat:"FAMILY", item:"Capital One (Saul)", amount:75.00, due:"22", notes:"Due 22nd", as:"saul"},
-      {cat:"FAMILY", item:"Apple Card (Saul)", amount:257.16, due:"EOM", notes:"End of month", as:"saul"}
+
+      {cat:"TRANSPORTATION", item:"Gas", amount:250.00, due:"", notes:"Monthly", as:"you"},
+      {cat:"TRANSPORTATION", item:"Car Payment #1", amount:369.89, due:"11", notes:"Due 11th", as:"you"},
+      {cat:"TRANSPORTATION", item:"Car Payment #2", amount:285.98, due:"17", notes:"Due 17th", as:"you"},
+
+      {cat:"FAMILY AID", item:"Discover Card (Saul)", amount:50.00, due:"10", notes:"Due 10th", as:"saul"},
+      {cat:"FAMILY AID", item:"Capital One (Saul)", amount:75.00, due:"22", notes:"Due 22nd", as:"saul"},
+      {cat:"FAMILY AID", item:"Apple Card (Saul)", amount:257.16, due:"EOM", notes:"End of month", as:"saul"}
     ],
     notes: ""
   };
 
   function parseStateFromSheet(sheetState){
-    // sheetState is a map key->value stored in the "state" tab
-    // store JSON blobs in a couple keys to keep it simple
     const out = {};
     out.includeSaul = (sheetState.includeSaul || DEFAULT.includeSaul);
     out.avgIncome = +(sheetState.avgIncome ?? DEFAULT.avgIncome);
     out.inflow = +(sheetState.inflow ?? DEFAULT.inflow);
     out.cash = +(sheetState.cash ?? DEFAULT.cash);
-
     try { out.rows = JSON.parse(sheetState.rowsJson || "null") || DEFAULT.rows; }
     catch { out.rows = DEFAULT.rows; }
-
     out.notes = String(sheetState.notes || DEFAULT.notes);
     out.updatedAt = sheetState.updatedAt || "";
     return out;
@@ -302,19 +307,26 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     };
   }
 
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
   function renderTable(state){
     const tbody = $("rows");
     tbody.innerHTML = "";
-
     state.rows.forEach((r, idx)=>{
       const tr = document.createElement("tr");
-
       tr.innerHTML = `
         <td>${r.cat}</td>
         <td>${r.item}</td>
         <td class="num"><input class="input small amt" data-idx="${idx}" value="${Number(r.amount||0)}"></td>
         <td><input class="input small due" data-idx="${idx}" placeholder="DD / MM-DD / EOM" value="${r.due||""}"></td>
-        <td class="notes">${r.notes||""}</td>
+        <td class="notes">${escapeHtml(r.notes||"")}</td>
         <td>
           <select data-idx="${idx}" class="as">
             <option value="you">YOU</option>
@@ -410,7 +422,10 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
     const burnTotal = burnYou + (includeSaul ? burnSaul : 0);
     const leftMo = state.avgIncome - burnTotal;
+
     const daily = burnTotal / 30.437;
+    const weekly = daily * 7;
+    const yearly = burnTotal * 12;
 
     const cashAfter = state.cash + state.inflow;
     const runway1 = daily > 0 ? (cashAfter / daily) : Infinity;
@@ -418,6 +433,8 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     $("burnTotal").textContent = money(burnTotal);
     $("leftMo").textContent = money(leftMo);
     $("daily").textContent = money(daily);
+    $("weekly").textContent = money(weekly);
+    $("yearly").textContent = money(yearly);
     $("runway1").textContent = isFinite(runway1) ? runway1.toFixed(0) : "∞";
 
     renderDueList(state);
@@ -431,7 +448,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
     const dT = $("dailyRows");
     dT.innerHTML = "";
-    daily.slice().reverse().slice(-30).reverse().forEach(x=>{
+    daily.slice(-30).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${x.ymd || ""}</td>
@@ -445,7 +462,7 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
 
     const wT = $("weeklyRows");
     wT.innerHTML = "";
-    weekly.slice().reverse().slice(-26).reverse().forEach(x=>{
+    weekly.slice(-26).reverse().forEach(x=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${x.week || ""}</td>
@@ -458,176 +475,180 @@ Runway (after inflow)  : <span class="blue" id="runway1">—</span> days
     });
   }
 
-  function escapeHtml(s){
-    return String(s)
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-  }
-
   function renderNotes(rows){
     const tbody = $("noteRows");
     tbody.innerHTML = "";
-    rows.slice().reverse().slice(-20).reverse().forEach(x=>{
+    rows.slice(-20).reverse().forEach(x=>{
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${String(x.ts||"")}</td><td>${escapeHtml(String(x.note||"")).replace(/\n/g,"<br>")}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(String(x.ts||""))}</td><td>${escapeHtml(String(x.note||"")).replace(/\n/g,"<br>")}</td>`;
       tbody.appendChild(tr);
     });
   }
 
-  async function loadAll(){
-    $("sync").textContent = "CONNECTING…";
-    const token = ensureToken();
-    if (!token){
-      $("sync").textContent = "NO TOKEN";
-      return null;
-    }
-
-    const data = await apiGet("getAll");
-    if (data.error){
-      $("sync").textContent = "UNAUTHORIZED";
-      return null;
-    }
-    $("sync").textContent = "CONNECTED";
-    return data;
-  }
-
-  async function pushState(state){
-    $("sync").textContent = "SAVING…";
-    const res = await apiPost("saveState", { state: buildStateForSheet(state) });
-    if (res && res.ok){
-      $("sync").textContent = "CONNECTED";
-      $("lastUpdated").textContent = fmt(new Date());
-    } else {
-      $("sync").textContent = "SAVE FAILED";
-    }
-  }
-
-  async function addSnapshot(type, state, calcOut){
-    const snap = {
-      type,
-      ymd: ymd(new Date()),
-      week: weekStartISO(new Date()),
-      burn: calcOut.burnTotal,
-      income: state.avgIncome,
-      cash: state.cash + state.inflow,
-      runway: calcOut.runway1,
-      includeSaul: state.includeSaul
-    };
-    $("sync").textContent = "SAVING…";
-    const res = await apiPost("addSnapshot", { snapshot: snap });
-    $("sync").textContent = (res && res.ok) ? "CONNECTED" : "SAVE FAILED";
-  }
-
-  async function addNote(text){
-    $("sync").textContent = "SAVING…";
-    const res = await apiPost("addNote", { note: text });
-    $("sync").textContent = (res && res.ok) ? "CONNECTED" : "SAVE FAILED";
-  }
-
-  // ===== MAIN =====
-  (async function boot(){
-    const data = await loadAll();
-    if (!data) return;
-
-    // If sheet is empty, initialize once
-    const sheetStateObj = data.state || {};
-    const isEmpty = Object.keys(sheetStateObj).length === 0;
-
-    let state = parseStateFromSheet(sheetStateObj);
-
-    if (isEmpty){
-      state = {...DEFAULT};
-      await pushState(state);
-    }
-
-    // hydrate UI
+  function hydrateUI(state){
     $("includeSaul").value = (state.includeSaul === "no" ? "no" : "yes");
     $("avgIncome").value = String(state.avgIncome);
     $("inflow").value = String(state.inflow);
     $("cash").value = String(state.cash);
     $("notes").value = state.notes || "";
-
-    // last updated line
     $("lastUpdated").textContent = state.updatedAt ? fmt(new Date(state.updatedAt)) : "—";
-
     renderTable(state);
-    const calcOut = calcAndRender(state);
+    calcAndRender(state);
+  }
+
+  function pullInputsIntoState(state){
+    state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
+    state.avgIncome = +$("avgIncome").value || 0;
+    state.inflow = +$("inflow").value || 0;
+    state.cash = +$("cash").value || 0;
+    state.notes = $("notes").value || "";
+
+    document.querySelectorAll("input.amt").forEach(inp=>{
+      const idx = +inp.dataset.idx;
+      state.rows[idx].amount = (+inp.value || 0);
+    });
+    document.querySelectorAll("input.due").forEach(inp=>{
+      const idx = +inp.dataset.idx;
+      state.rows[idx].due = String(inp.value || "").trim();
+    });
+    document.querySelectorAll("select.as").forEach(sel=>{
+      const idx = +sel.dataset.idx;
+      state.rows[idx].as = sel.value;
+    });
+  }
+
+  let state = null;
+  let saveTimer = null;
+
+  async function loadAll(){
+    setSync("CONNECTING…");
+    const data = await apiGet("getAll");
+    if (data && data.error){
+      setSync("UNAUTHORIZED");
+      enableUI(false);
+      return null;
+    }
+    setSync("CONNECTED");
+    enableUI(true);
+    return data;
+  }
+
+  async function pushState(){
+    if (!state) return;
+    setSync("SAVING…");
+    const res = await apiPost("saveState", { state: buildStateForSheet(state) });
+    if (res && res.ok){
+      setSync("CONNECTED");
+      $("lastUpdated").textContent = fmt(new Date());
+    } else {
+      setSync("SAVE FAILED");
+    }
+  }
+
+  function scheduleSave(){
+    if (!state) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      pullInputsIntoState(state);
+      calcAndRender(state);
+      await pushState();
+    }, 450);
+  }
+
+  async function addSnapshot(type){
+    if (!state) return;
+    pullInputsIntoState(state);
+    const c = calcAndRender(state);
+    setSync("SAVING…");
+    const snap = {
+      type,
+      ymd: ymd(new Date()),
+      week: weekStartISO(new Date()),
+      burn: c.burnTotal,
+      income: state.avgIncome,
+      cash: state.cash + state.inflow,
+      runway: c.runway1,
+      includeSaul: state.includeSaul
+    };
+    const res = await apiPost("addSnapshot", { snapshot: snap });
+    if (!(res && res.ok)){ setSync("SAVE FAILED"); return; }
+    const fresh = await loadAll();
+    if (fresh) renderSnapshots(fresh.snapshots || []);
+  }
+
+  async function saveNote(){
+    if (!state) return;
+    const text = ($("notes").value || "").trim();
+    if (!text) return;
+    setSync("SAVING…");
+    const res = await apiPost("addNote", { note: text });
+    if (!(res && res.ok)){ setSync("SAVE FAILED"); return; }
+    const fresh = await loadAll();
+    if (fresh) renderNotes(fresh.notes || []);
+  }
+
+  async function login(){
+    const token = prompt("Passphrase:");
+    if (!token) return;
+    sessionStorage.setItem(TOKEN_KEY, token);
+
+    const data = await loadAll();
+    if (!data) return;
+
+    const sheetStateObj = data.state || {};
+    const empty = Object.keys(sheetStateObj).length === 0;
+
+    state = parseStateFromSheet(sheetStateObj);
+
+    if (empty){
+      state = JSON.parse(JSON.stringify(DEFAULT));
+      await pushState();
+      const fresh = await loadAll();
+      if (fresh){
+        state = parseStateFromSheet(fresh.state || {});
+        hydrateUI(state);
+        renderSnapshots(fresh.snapshots || []);
+        renderNotes(fresh.notes || []);
+      }
+      return;
+    }
+
+    hydrateUI(state);
     renderSnapshots(data.snapshots || []);
     renderNotes(data.notes || []);
+  }
 
-    function pullInputsIntoState(){
-      state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
-      state.avgIncome = +$("avgIncome").value || 0;
-      state.inflow = +$("inflow").value || 0;
-      state.cash = +$("cash").value || 0;
-      state.notes = $("notes").value || "";
+  function logout(){
+    sessionStorage.removeItem(TOKEN_KEY);
+    state = null;
+    enableUI(false);
+    setSync("DISCONNECTED");
+    $("lastUpdated").textContent = "—";
+  }
 
-      // table values
-      document.querySelectorAll("input.amt").forEach(inp=>{
-        const idx = +inp.dataset.idx;
-        state.rows[idx].amount = (+inp.value || 0);
-      });
-      document.querySelectorAll("input.due").forEach(inp=>{
-        const idx = +inp.dataset.idx;
-        state.rows[idx].due = String(inp.value || "").trim();
-      });
-      document.querySelectorAll("select.as").forEach(sel=>{
-        const idx = +sel.dataset.idx;
-        state.rows[idx].as = sel.value;
-      });
-    }
+  // Wire UI (works after login)
+  ["includeSaul","avgIncome","inflow","cash","notes"].forEach(id=>{
+    $(id).addEventListener("input", scheduleSave);
+    $(id).addEventListener("change", scheduleSave);
+  });
+  $("rows").addEventListener("input", (e)=>{
+    if (!e.target) return;
+    if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
+  });
+  $("rows").addEventListener("change", (e)=>{
+    if (!e.target) return;
+    if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
+  });
 
-    let saveTimer = null;
-    function scheduleSave(){
-      if (saveTimer) clearTimeout(saveTimer);
-      saveTimer = setTimeout(async ()=>{
-        pullInputsIntoState();
-        calcAndRender(state);
-        await pushState(state);
-      }, 450);
-    }
+  $("snapDaily").addEventListener("click", ()=>addSnapshot("daily"));
+  $("snapWeekly").addEventListener("click", ()=>addSnapshot("weekly"));
+  $("saveNote").addEventListener("click", saveNote);
 
-    ["includeSaul","avgIncome","inflow","cash","notes"].forEach(id=>{
-      $(id).addEventListener("input", scheduleSave);
-      $(id).addEventListener("change", scheduleSave);
-    });
+  $("loginBtn").addEventListener("click", login);
+  $("logoutBtn").addEventListener("click", logout);
 
-    $("rows").addEventListener("input", (e)=>{
-      if (!e.target) return;
-      if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
-    });
-    $("rows").addEventListener("change", (e)=>{
-      if (!e.target) return;
-      if (e.target.classList.contains("amt") || e.target.classList.contains("due") || e.target.classList.contains("as")) scheduleSave();
-    });
-
-    $("snapDaily").addEventListener("click", async ()=>{
-      pullInputsIntoState();
-      const c = calcAndRender(state);
-      await addSnapshot("daily", state, c);
-      const fresh = await loadAll();
-      if (fresh) renderSnapshots(fresh.snapshots || []);
-    });
-
-    $("snapWeekly").addEventListener("click", async ()=>{
-      pullInputsIntoState();
-      const c = calcAndRender(state);
-      await addSnapshot("weekly", state, c);
-      const fresh = await loadAll();
-      if (fresh) renderSnapshots(fresh.snapshots || []);
-    });
-
-    $("saveNote").addEventListener("click", async ()=>{
-      const text = ($("notes").value || "").trim();
-      if (!text) return;
-      await addNote(text);
-      const fresh = await loadAll();
-      if (fresh) renderNotes(fresh.notes || []);
-    });
-  })();
+  // If token already exists in session, auto-login
+  if (sessionStorage.getItem(TOKEN_KEY)) login();
 })();
 </script>
 </body>
