@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emanuel Payan | Burn</title>
+
+<style>
+  html, body{
+    margin:0;
+    height:100%;
+    background:#000;
+    color:#fff;
+    font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
+    font-size:15px;
+  }
+  .wrap{ padding:20px; max-width:1200px; }
+  .title{ margin-bottom:12px; letter-spacing:.5px; }
+  .btn{
+    background:#000;
+    color:#fff;
+    border:1px solid #fff;
+    padding:4px 10px;
+    font-family:inherit;
+    font-size:15px;
+    cursor:pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+  <div class="title">
+    Emanuel Payan | Burn
+    <button class="btn" id="logoutBtn" style="margin-left:12px;">LOGOUT</button>
+  </div>
+
+  <!-- 🔥 PUT ALL YOUR EXISTING BURN APP HTML BELOW 🔥 -->
+  <!-- tables, inputs, charts, everything you already built -->
+
+  <p>Burn app loaded successfully.</p>
+</div>
+
+<script>
+(() => {
+  const TOKEN_KEY = "emanuel_burn_token_session";
+
+  // block access if not logged in
+  if (!sessionStorage.getItem(TOKEN_KEY)) {
+    window.location.replace("/burn.html");
+    return;
+  }
+
+  // logout
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    sessionStorage.removeItem(TOKEN_KEY);
+    window.location.replace("/burn.html");
+  });
+
+  // 🔥 PASTE YOUR ENTIRE PREVIOUS BURN APP JS BELOW 🔥
+  // loadAll(), apiGet(), apiPost(), calculations, everything
+})();
+</script>
+
+</body>
+</html>
