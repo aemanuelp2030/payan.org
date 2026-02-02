@@ -89,31 +89,11 @@
     overflow:auto;
   }
   .chart-title{ margin-bottom:8px; }
-
-  /* BLANK BEFORE LOGIN */
-  #app{ display:none; }
-  #gate{ display:block; }
 </style>
 </head>
 
 <body>
-
-<!-- GATE (only visible before login / on error) -->
-<div class="wrap" id="gate">
-  <div class="title">Emanuel Payan | Burn</div>
-  <div class="row">
-    <a href="index.html">Back</a>
-    <span class="muted">|</span>
-    <button class="btn" id="loginBtnGate">LOGIN</button>
-    <span class="muted" id="gateErr" style="display:none;">| <span class="bad">ERROR</span> (console)</span>
-  </div>
-  <div class="row" style="margin-top:10px;">
-    <span class="bad" id="gateMsg" style="display:none;"></span>
-  </div>
-</div>
-
-<!-- APP (hidden until login succeeds) -->
-<div class="wrap" id="app">
+<div class="wrap">
   <div class="title">Emanuel Payan | Burn</div>
 
   <div class="meta">
@@ -122,7 +102,8 @@
       <span class="muted">|</span>
       SYNC: <span class="blue" id="sync">LOCKED</span>
       <span class="muted">|</span>
-      <button class="btn" id="logoutBtn">LOGOUT</button>
+      <button class="btn" id="loginBtn">LOGIN</button>
+      <button class="btn" id="logoutBtn" style="display:none;">LOGOUT</button>
       <span class="muted" id="err" style="display:none;">| <span class="bad">ERROR</span> (console)</span>
     </div>
 
@@ -163,7 +144,7 @@ Liabilities (Debt)     : <input class="input" id="liabDebt" value="0.00" disable
     </div>
 
     <div class="block mono">
-Net Worth               : <span class="blue" id="netWorth">—</span>
+Net Worth              : <span class="blue" id="netWorth">—</span>
 30d Projection          : <span class="blue" id="nw30">—</span>
 90d Projection          : <span class="blue" id="nw90">—</span>
 365d Projection         : <span class="blue" id="nw365">—</span>
@@ -266,6 +247,7 @@ Net Worth               : <span class="blue" id="netWorth">—</span>
     </thead>
     <tbody id="noteRows"></tbody>
   </table>
+
 </div>
 
 <script>
@@ -290,52 +272,26 @@ Net Worth               : <span class="blue" id="netWorth">—</span>
     return ymd(x);
   }
 
-  function showGate(){
-    $("app").style.display = "none";
-    $("gate").style.display = "";
-  }
-
-  function showApp(){
-    $("gate").style.display = "none";
-    $("app").style.display = "";
-  }
-
   function setSync(text){ $("sync").textContent = text; }
   function showErr(on){ $("err").style.display = on ? "" : "none"; }
-  function showGateErr(on){ $("gateErr").style.display = on ? "" : "none"; }
-  function setGateMsg(msg){
-    const el = $("gateMsg");
-    if (!el) return;
-    if (!msg) { el.style.display="none"; el.textContent=""; return; }
-    el.style.display = "";
-    el.textContent = msg;
-  }
   function token(){ return sessionStorage.getItem(TOKEN_KEY) || ""; }
 
   async function apiGet(action){
-    try {
-      const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token())}`;
-      const res = await fetch(url, { cache:"no-cache" });
-      const text = await res.text();
-      try { return JSON.parse(text); }
-      catch { return { error:"bad_json", text }; }
-    } catch (err) {
-      return { error:"fetch_failed", text: String(err) };
-    }
+    const url = `${SCRIPT_URL}?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token())}`;
+    const res = await fetch(url, { cache:"no-cache" });
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch { return { error:"bad_json", text }; }
   }
 
   async function apiPost(action, payload){
-    try {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action, token: token(), ...payload })
-      });
-      const text = await res.text();
-      try { return JSON.parse(text); }
-      catch { return { error:"bad_json", text }; }
-    } catch (err) {
-      return { error:"fetch_failed", text: String(err) };
-    }
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action, token: token(), ...payload })
+    });
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch { return { error:"bad_json", text }; }
   }
 
   function enableUI(on){
@@ -575,52 +531,368 @@ Net Worth               : <span class="blue" id="netWorth">—</span>
     return c;
   }
 
-  // charts/snapshots/notes + saving left unchanged from your version
-  // (kept minimal: your page "not working" is auth/network; this block is enough to show the real error)
+  function sparkSVG(series, width=900, height=160){
+    const vals = series.filter(v => v!=null && isFinite(v));
+    if (!vals.length) return `<span class="muted">—</span>`;
+
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const pad = 10;
+
+    const scaleX = (i) => pad + (i * (width - pad*2) / Math.max(1, series.length-1));
+    const scaleY = (v) => {
+      if (max === min) return height/2;
+      const t = (v - min) / (max - min);
+      return (height - pad) - t * (height - pad*2);
+    };
+
+    let pts = "";
+    series.forEach((v,i)=>{
+      if (v==null || !isFinite(v)) return;
+      pts += `${scaleX(i)},${scaleY(v)} `;
+    });
+
+    return `
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="${width}" height="${height}" fill="#000"/>
+  <rect x="0.5" y="0.5" width="${width-1}" height="${height-1}" fill="none" stroke="#fff"/>
+  <polyline fill="none" stroke="#007BFF" stroke-width="2" points="${pts.trim()}"/>
+  <text x="10" y="18" fill="#fff" font-size="12">${esc(money(max))}</text>
+  <text x="10" y="${height-10}" fill="#fff" font-size="12">${esc(money(min))}</text>
+</svg>`;
+  }
+
+  function renderCharts(daily){
+    const ordered = daily.slice().sort((a,b)=>String(a.ymd||"").localeCompare(String(b.ymd||"")));
+    const seriesNet  = ordered.map(x=>num(x.net));
+    const seriesCash = ordered.map(x=>num(x.cash));
+    $("chartNetWorth").innerHTML = sparkSVG(seriesNet);
+    $("chartCash").innerHTML = sparkSVG(seriesCash);
+  }
+
+  function renderSnapshots(rows){
+    const daily = rows.filter(r=>String(r.type||"").toLowerCase()==="daily");
+    const weekly = rows.filter(r=>String(r.type||"").toLowerCase()==="weekly");
+
+    const dT = $("dailyRows");
+    dT.innerHTML = "";
+    daily.slice(-30).reverse().forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${esc(x.ymd || "")}</td>
+        <td class="num">${money(num(x.burn))}</td>
+        <td class="num">${money(num(x.income))}</td>
+        <td class="num">${money(num(x.cash))}</td>
+        <td class="num">${money(num(x.net))}</td>
+        <td class="num">${isFinite(num(x.runway)) ? num(x.runway).toFixed(0) : "∞"}</td>
+      `;
+      dT.appendChild(tr);
+    });
+
+    const wT = $("weeklyRows");
+    wT.innerHTML = "";
+    weekly.slice(-26).reverse().forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${esc(x.week || "")}</td>
+        <td class="num">${money(num(x.burn))}</td>
+        <td class="num">${money(num(x.income))}</td>
+        <td class="num">${money(num(x.cash))}</td>
+        <td class="num">${money(num(x.net))}</td>
+        <td class="num">${isFinite(num(x.runway)) ? num(x.runway).toFixed(0) : "∞"}</td>
+      `;
+      wT.appendChild(tr);
+    });
+
+    renderCharts(daily);
+  }
+
+  function renderNotes(rows){
+    const tbody = $("noteRows");
+    tbody.innerHTML = "";
+    rows.slice(-30).reverse().forEach(x=>{
+      const ts = x.ts || "";
+      const note = x.note || "";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${esc(String(ts))}</td><td>${esc(String(note)).replace(/\n/g,"<br>")}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function pushState(state){
+    setSync("SAVING…");
+    showErr(false);
+    const res = await apiPost("saveState", { state: buildSheetState(state) });
+    if (res && res.ok){
+      setSync("CONNECTED");
+      $("lastUpdated").textContent = fmt(new Date());
+    } else {
+      setSync(res && res.error === "unauthorized" ? "LOCKED" : "ERROR");
+      showErr(true);
+      console.log("saveState failed:", res);
+    }
+  }
+
+  async function addSnapshot(type, state, c){
+    setSync("SAVING…");
+    showErr(false);
+
+    const snap = {
+      type,
+      ymd: ymd(new Date()),
+      week: weekStartISO(new Date()),
+      burn: c.burnTotal,
+      income: state.avgIncome,
+      cash: state.cash + state.inflow,
+      net: c.netWorth,
+      runway: c.runway1,
+      includeSaul: state.includeSaul
+    };
+
+    const res = await apiPost("addSnapshot", { snapshot: snap });
+    if (res && res.ok) setSync("CONNECTED");
+    else {
+      setSync(res && res.error === "unauthorized" ? "LOCKED" : "ERROR");
+      showErr(true);
+      console.log("addSnapshot failed:", res);
+    }
+  }
+
+  function pullInputsIntoState(state){
+    state.includeSaul = $("includeSaul").value === "no" ? "no" : "yes";
+    state.avgIncome   = num($("avgIncome").value);
+    state.inflow      = num($("inflow").value);
+    state.cash        = num($("cash").value);
+
+    state.assetLiquid = num($("assetLiquid").value);
+    state.assetOther  = num($("assetOther").value);
+    state.liabDebt    = num($("liabDebt").value);
+
+    const rows = state.rows;
+
+    document.querySelectorAll("#rows .cat").forEach(inp=>{
+      const i = +inp.dataset.idx;
+      rows[i].cat = String(inp.value||"").trim();
+    });
+    document.querySelectorAll("#rows .item").forEach(inp=>{
+      const i = +inp.dataset.idx;
+      rows[i].item = String(inp.value||"").trim();
+    });
+    document.querySelectorAll("#rows .amt").forEach(inp=>{
+      const i = +inp.dataset.idx;
+      rows[i].amount = num(inp.value);
+    });
+    document.querySelectorAll("#rows .due").forEach(inp=>{
+      const i = +inp.dataset.idx;
+      rows[i].due = String(inp.value||"").trim();
+    });
+    document.querySelectorAll("#rows .note").forEach(inp=>{
+      const i = +inp.dataset.idx;
+      rows[i].notes = String(inp.value||"").trim();
+    });
+    document.querySelectorAll("#rows .as").forEach(sel=>{
+      const i = +sel.dataset.idx;
+      rows[i].as = sel.value;
+    });
+  }
+
+  let state = null;
+  let saveTimer = null;
+
+  function scheduleSave(){
+    if (!state) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      pullInputsIntoState(state);
+      renderCalc(state);
+      await pushState(state);
+    }, 450);
+  }
+
+  // ✅ FIXED wireOnce (this was breaking your entire script)
+  let wired = false;
+  function wireOnce(){
+    if (wired) return;
+    wired = true;
+
+    // Inputs that affect totals
+    ["includeSaul","avgIncome","inflow","cash","assetLiquid","assetOther","liabDebt"].forEach(id=>{
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        if (!state) return;
+        pullInputsIntoState(state);
+        renderCalc(state);
+        scheduleSave();
+      });
+      el.addEventListener("change", () => {
+        if (!state) return;
+        pullInputsIntoState(state);
+        renderCalc(state);
+        scheduleSave();
+      });
+    });
+
+    // Row edits
+    $("rows").addEventListener("input", ()=>{
+      if (!state) return;
+      pullInputsIntoState(state);
+      renderCalc(state);
+      scheduleSave();
+    });
+
+    $("rows").addEventListener("change", ()=>{
+      if (!state) return;
+      pullInputsIntoState(state);
+      renderCalc(state);
+      scheduleSave();
+    });
+
+    $("rows").addEventListener("click", (e)=>{
+      const btn = e.target;
+      if (btn && btn.classList.contains("del")){
+        const idx = +btn.dataset.idx;
+        state.rows.splice(idx, 1);
+        renderTable(state);
+        enableUI(true);
+        renderCalc(state);
+        scheduleSave();
+      }
+    });
+
+    $("addRow").addEventListener("click", ()=>{
+      state.rows.push({cat:"", item:"", amount:0, due:"", notes:"", as:"you"});
+      renderTable(state);
+      enableUI(true);
+      renderCalc(state);
+      scheduleSave();
+    });
+
+    $("saveNow").addEventListener("click", async ()=>{
+      pullInputsIntoState(state);
+      renderCalc(state);
+      await pushState(state);
+    });
+
+    $("snapDaily").addEventListener("click", async ()=>{
+      pullInputsIntoState(state);
+      const c = renderCalc(state);
+      await addSnapshot("daily", state, c);
+      const fresh = await apiGet("getAll");
+      if (!fresh.error) renderSnapshots(fresh.snapshots || []);
+    });
+
+    $("snapWeekly").addEventListener("click", async ()=>{
+      pullInputsIntoState(state);
+      const c = renderCalc(state);
+      await addSnapshot("weekly", state, c);
+      const fresh = await apiGet("getAll");
+      if (!fresh.error) renderSnapshots(fresh.snapshots || []);
+    });
+
+    $("saveNote").addEventListener("click", async ()=>{
+      const text = ($("notes").value || "").trim();
+      if (!text) return;
+
+      setSync("SAVING…");
+      showErr(false);
+
+      const res = await apiPost("addNote", { note: text });
+      if (!(res && res.ok)) {
+        setSync(res && res.error === "unauthorized" ? "LOCKED" : "ERROR");
+        showErr(true);
+        console.log("addNote failed:", res);
+        return;
+      }
+
+      $("notes").value = "";
+      setSync("CONNECTED");
+
+      const fresh = await apiGet("getAll");
+      if (!fresh.error) renderNotes(fresh.notes || []);
+    });
+
+    $("loginBtn").addEventListener("click", async ()=>{
+      const pass = prompt("PASSCODE:");
+      if (!pass) return;
+      sessionStorage.setItem(TOKEN_KEY, pass);
+      $("loginBtn").style.display = "none";
+      $("logoutBtn").style.display = "";
+      await loadAll();
+    });
+
+    $("logoutBtn").addEventListener("click", ()=>{
+      sessionStorage.removeItem(TOKEN_KEY);
+      location.reload();
+    });
+  }
 
   async function loadAll(){
     setSync("CONNECTING…");
     showErr(false);
-    showGateErr(false);
-    setGateMsg("");
 
     const data = await apiGet("getAll");
-
     if (data && data.error){
+      setSync(data.error === "unauthorized" ? "LOCKED" : "ERROR");
+      showErr(data.error !== "unauthorized");
       enableUI(false);
-      showGate();
-      showGateErr(true);
-      setGateMsg(`LOGIN FAILED: ${data.error}`);
-      console.log("loadAll error:", data);
-      return false;
+      return;
     }
 
-    // If your Apps Script returns ok JSON, show app
-    showApp();
-    enableUI(true);
     setSync("CONNECTED");
+    enableUI(true);
+    wireOnce();
 
-    // If you want the full app to populate, keep the rest of your original loadAll body here.
-    // For now: at least you won't be blank; you'll see the failure reason if it fails.
-    return true;
+    const sheetStateObj = data.state || {};
+    const empty = Object.keys(sheetStateObj).length === 0;
+
+    state = empty ? JSON.parse(JSON.stringify(DEFAULT)) : parseState(sheetStateObj);
+
+    $("includeSaul").value = (state.includeSaul === "no" ? "no" : "yes");
+    $("avgIncome").value   = String(state.avgIncome.toFixed(2));
+    $("inflow").value      = String(state.inflow.toFixed(2));
+    $("cash").value        = String(state.cash.toFixed(2));
+
+    $("assetLiquid").value = String(state.assetLiquid.toFixed(2));
+    $("assetOther").value  = String(state.assetOther.toFixed(2));
+    $("liabDebt").value    = String(state.liabDebt.toFixed(2));
+
+    $("lastUpdated").textContent = state.updatedAt ? fmt(new Date(state.updatedAt)) : "—";
+
+    renderTable(state);
+    renderCalc(state);
+
+    renderSnapshots(data.snapshots || []);
+    renderNotes(data.notes || []);
+
+    if (empty) await pushState(state);
   }
 
-  // gate login
-  $("loginBtnGate").addEventListener("click", async ()=>{
-    const pass = prompt("PASSCODE:");
-    if (!pass) return;
-    sessionStorage.setItem(TOKEN_KEY, pass);
-    await loadAll();
-  });
+  // burn countdown tick
+  setInterval(()=>{
+    const s = window.__burnCountdownSeconds;
+    if (s == null || !isFinite(s)) return;
+    window.__burnCountdownSeconds = Math.max(0, s - 1);
+    const el = $("burnCountdown");
+    if (el) el.textContent = secondsToDHMS(window.__burnCountdownSeconds);
+  }, 1000);
 
-  // boot: blank until login
-  showGate();
+  // boot (always ask)
+if (token()){
+  $("loginBtn").style.display = "none";
+  $("logoutBtn").style.display = "";
+  loadAll();                 // only auto-load when token exists
+} else {
+  $("loginBtn").style.display = "";
+  $("logoutBtn").style.display = "none";
+  setSync("LOCKED");         // stay locked until user clicks LOGIN
   enableUI(false);
+}
+})();
 
-  // if token exists, try auto-load
-  if (token()){
-    loadAll();
+
   }
+  loadAll();
 })();
 </script>
 </body>
