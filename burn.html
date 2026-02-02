@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>Emanuel Payan | Burn</title>
+  <title>Burn</title>
 
   <style>
     html, body {
@@ -15,18 +14,6 @@
       font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
     }
 
-    /* top-left name */
-    .brand {
-      position: fixed;
-      top: 18px;
-      left: 18px;
-    }
-
-    .brand a {
-      color: #fff;
-      text-decoration: none;
-    }
-
     .center {
       height: 100%;
       display: flex;
@@ -34,76 +21,39 @@
       justify-content: center;
     }
 
-    .box {
-      text-align: center;
-    }
-
     input {
       background: #000;
       color: #fff;
       border: 1px solid #fff;
-      padding: 8px;
+      padding: 10px;
       font-family: inherit;
-      width: 220px;
-      margin-bottom: 12px;
-    }
-
-    button {
-      background: #000;
-      color: #fff;
-      border: 1px solid #fff;
-      padding: 6px 16px;
-      font-family: inherit;
-      cursor: pointer;
-    }
-
-    .err {
-      color: #f33;
-      margin-top: 10px;
-      display: none;
+      width: 260px;
+      outline: none;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- top-left name -->
-  <div class="brand">
-    <a href="https://payan.org/">Emanuel Payan</a>
-  </div>
-
-  <!-- centered login -->
   <div class="center">
-    <div class="box">
-      <div style="margin-bottom:12px;">Burn</div>
-
-      <input id="pass" type="password" placeholder="PASSCODE" autofocus>
-      <br>
-      <button id="loginBtn">ENTER</button>
-
-      <div class="err" id="err">INVALID</div>
-    </div>
+    <input id="pass" type="password" placeholder="" autofocus>
   </div>
 
   <script>
     (() => {
       const TOKEN_KEY = "emanuel_burn_token_session";
+      const pass = document.getElementById("pass");
 
-      document.getElementById("loginBtn").onclick = login;
-      document.getElementById("pass").onkeydown = (e) => {
-        if (e.key === "Enter") login();
-      };
-
-      function login(){
-        const pass = document.getElementById("pass").value.trim();
-        if (!pass) return;
-
-        sessionStorage.setItem(TOKEN_KEY, pass);
-        window.location.href = "/burn/burn-app.html";
-      }
+      pass.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = pass.value.trim();
+          if (!val) return;
+          sessionStorage.setItem(TOKEN_KEY, val);
+          window.location.href = "/burn/burn-app.html";
+        }
+      });
     })();
   </script>
 
 </body>
 </html>
-
