@@ -6,185 +6,84 @@
 <title>Emanuel Payan | Burn</title>
 
 <style>
-  html, body{
-    margin:0;
-    height:100%;
-    background:#000;
-    color:#fff;
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #000;
+    color: #fff;
     font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
-    font-size:15px;
   }
 
-  /* ---------- LOGIN GATE ---------- */
-  #gate{
-    position:fixed;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#000;
-  }
-  #gateBox{
-    display:flex;
-    gap:10px;
-    align-items:center;
-  }
-  #gate input{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    padding:6px 8px;
-    font-family:inherit;
-    font-size:15px;
-    width:200px;
-  }
-  #gate button{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    padding:6px 12px;
-    font-family:inherit;
-    font-size:15px;
-    cursor:pointer;
+  .center {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* ---------- APP ---------- */
-  #app{ display:none; }
-  .wrap{ padding:20px; max-width:1200px; }
-  .title{ margin-bottom:10px; letter-spacing:.5px; font-weight:normal; }
-  .meta{ margin-bottom:14px; line-height:1.6; }
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  .section{ margin:18px 0 8px; }
-  .grid{ display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; }
-  .block{ min-width:320px; }
-  .mono{ white-space:pre-wrap; line-height:1.6; }
-  .blue{ color:#007BFF; }
-  .muted{ opacity:.85; }
-  .bad{ color:#f33; }
-
-  a{ color:#fff; text-decoration:none; }
-
-  .input{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    padding:4px 6px;
-    font-family:inherit;
-    font-size:15px;
-    width:180px;
-    box-sizing:border-box;
+  .box {
+    text-align: center;
   }
-  .input.small{ width:120px; }
-  .input.tiny{ width:80px; }
 
-  .btn{
-    background:#000;
-    color:#fff;
-    border:1px solid #fff;
-    padding:4px 10px;
-    font-family:inherit;
-    font-size:15px;
-    cursor:pointer;
+  input {
+    background: #000;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 8px;
+    font-family: inherit;
+    width: 220px;
+    margin-bottom: 12px;
+  }
+
+  button {
+    background: #000;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 6px 16px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .err {
+    color: #f33;
+    margin-top: 10px;
+    display: none;
   }
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOGIN GATE ================= -->
-<div id="gate">
-  <div id="gateBox">
-    <input id="passInput" type="password" placeholder="Password">
+<div class="center">
+  <div class="box">
+    <div style="margin-bottom:12px;">Emanuel Payan | Burn</div>
+
+    <input id="pass" type="password" placeholder="PASSCODE" autofocus>
+    <br>
     <button id="loginBtn">ENTER</button>
-  </div>
-</div>
 
-<!-- ================= APP ================= -->
-<div id="app">
-  <div class="wrap">
-    <div class="title">Emanuel Payan | Burn</div>
-
-    <div class="meta">
-      <div class="row">
-        <a href="index.html">Back</a>
-        <span class="muted">|</span>
-        SYNC: <span class="blue" id="sync">LOCKED</span>
-        <span class="muted">|</span>
-        <button class="btn" id="logoutBtn">LOGOUT</button>
-      </div>
-      LAST UPDATED: <span class="blue" id="lastUpdated">—</span>
-    </div>
-
-    <!-- your burn app continues here unchanged -->
-    <!-- NOTHING REMOVED -->
-    <!-- (for brevity I’m not repeating every table again) -->
-    <p class="muted">Burn system loaded.</p>
+    <div class="err" id="err">INVALID</div>
   </div>
 </div>
 
 <script>
 (() => {
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHUYAzQBNE5qQXOs07z7Gg_d78qZOb4WNCirHBeJOSSRcOMMx-NxWqHTTzTZOvFmjo3w/exec";
   const TOKEN_KEY = "emanuel_burn_token_session";
-  const $ = id => document.getElementById(id);
 
-  function token(){ return sessionStorage.getItem(TOKEN_KEY) || ""; }
+  document.getElementById("loginBtn").onclick = login;
+  document.getElementById("pass").onkeydown = (e) => {
+    if (e.key === "Enter") login();
+  };
 
-  function showGate(){
-    $("gate").style.display = "flex";
-    $("app").style.display = "none";
-  }
-
-  function showApp(){
-    $("gate").style.display = "none";
-    $("app").style.display = "block";
-  }
-
-  async function apiGet(action){
-    try{
-      const res = await fetch(`${SCRIPT_URL}?action=${action}&token=${encodeURIComponent(token())}`);
-      return await res.json();
-    }catch{
-      return { error:"fetch_failed" };
-    }
-  }
-
-  async function loadAll(){
-    $("sync").textContent = "CONNECTING…";
-    const data = await apiGet("getAll");
-    if (data.error){
-      showGate();
-      $("sync").textContent = "LOCKED";
-      return;
-    }
-    $("sync").textContent = "CONNECTED";
-    showApp();
-  }
-
-  // ---------- LOGIN ----------
-  $("loginBtn").onclick = async () => {
-    const pass = $("passInput").value.trim();
+  function login(){
+    const pass = document.getElementById("pass").value.trim();
     if (!pass) return;
+
+    // store token
     sessionStorage.setItem(TOKEN_KEY, pass);
-    $("passInput").value = "";
-    await loadAll();
-  };
 
-  $("passInput").addEventListener("keydown", e=>{
-    if (e.key === "Enter") $("loginBtn").click();
-  });
-
-  $("logoutBtn").onclick = () => {
-    sessionStorage.removeItem(TOKEN_KEY);
-    showGate();
-  };
-
-  // ---------- BOOT ----------
-  if (token()){
-    showApp();
-    loadAll();
-  } else {
-    showGate();
+    // HARD redirect to the app
+    window.location.href = "/burn/burn-app.html";
   }
 })();
 </script>
