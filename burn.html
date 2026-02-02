@@ -1,96 +1,109 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-  <h1 class="title">
-  <a href="https://payan.org/">Emanuel Payan</a>
-</h1>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <title>Emanuel Payan | Burn</title>
 
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
+    }
 
-<style>
-  html, body {
-    margin: 0;
-    height: 100%;
-    background: #000;
-    color: #fff;
-    font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
-  }
+    /* top-left name */
+    .brand {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+    }
 
-  .center {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    .brand a {
+      color: #fff;
+      text-decoration: none;
+    }
 
-  .box {
-    text-align: center;
-  }
+    .center {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  input {
-    background: #000;
-    color: #fff;
-    border: 1px solid #fff;
-    padding: 8px;
-    font-family: inherit;
-    width: 220px;
-    margin-bottom: 12px;
-  }
+    .box {
+      text-align: center;
+    }
 
-  button {
-    background: #000;
-    color: #fff;
-    border: 1px solid #fff;
-    padding: 6px 16px;
-    font-family: inherit;
-    cursor: pointer;
-  }
+    input {
+      background: #000;
+      color: #fff;
+      border: 1px solid #fff;
+      padding: 8px;
+      font-family: inherit;
+      width: 220px;
+      margin-bottom: 12px;
+    }
 
-  .err {
-    color: #f33;
-    margin-top: 10px;
-    display: none;
-  }
-</style>
+    button {
+      background: #000;
+      color: #fff;
+      border: 1px solid #fff;
+      padding: 6px 16px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .err {
+      color: #f33;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="center">
-  <div class="box">
-    <div style="margin-bottom:12px;">Emanuel Payan | Burn</div>
-
-    <input id="pass" type="password" placeholder="PASSCODE" autofocus>
-    <br>
-    <button id="loginBtn">ENTER</button>
-
-    <div class="err" id="err">INVALID</div>
+  <!-- top-left name -->
+  <div class="brand">
+    <a href="https://payan.org/">Emanuel Payan</a>
   </div>
-</div>
 
-<script>
-(() => {
-  const TOKEN_KEY = "emanuel_burn_token_session";
+  <!-- centered login -->
+  <div class="center">
+    <div class="box">
+      <div style="margin-bottom:12px;">Burn</div>
 
-  document.getElementById("loginBtn").onclick = login;
-  document.getElementById("pass").onkeydown = (e) => {
-    if (e.key === "Enter") login();
-  };
+      <input id="pass" type="password" placeholder="PASSCODE" autofocus>
+      <br>
+      <button id="loginBtn">ENTER</button>
 
-  function login(){
-    const pass = document.getElementById("pass").value.trim();
-    if (!pass) return;
+      <div class="err" id="err">INVALID</div>
+    </div>
+  </div>
 
-    // store token
-    sessionStorage.setItem(TOKEN_KEY, pass);
+  <script>
+    (() => {
+      const TOKEN_KEY = "emanuel_burn_token_session";
 
-    // HARD redirect to the app
-    window.location.href = "/burn/burn-app.html";
-  }
-})();
-</script>
+      document.getElementById("loginBtn").onclick = login;
+      document.getElementById("pass").onkeydown = (e) => {
+        if (e.key === "Enter") login();
+      };
+
+      function login(){
+        const pass = document.getElementById("pass").value.trim();
+        if (!pass) return;
+
+        sessionStorage.setItem(TOKEN_KEY, pass);
+        window.location.href = "/burn/burn-app.html";
+      }
+    })();
+  </script>
 
 </body>
 </html>
+
