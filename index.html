@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Emanuel Payan</title>
-
+<meta property="og:title" content="[payan]">
+<meta property="og:description" content="I am God. Bend reality.">
+<meta property="og:image" content="https://payan.org/payan.jpg">
+<meta property="og:url" content="https://payan.org">
+<meta property="og:type" content="website">
 <style>
   html, body {
     margin: 0;
@@ -14,22 +18,18 @@
     font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
     font-size: 15px;
   }
-
   .wrap {
     padding: 20px;
   }
-
   .title {
     margin-bottom: 14px;
     font-weight: normal;
     letter-spacing: .5px;
   }
-
   .title a {
     color: #fff;
     text-decoration: none;
   }
-
   /* two timers row */
   .timers {
     display: flex;
@@ -38,29 +38,24 @@
     gap: 40px;
     margin-bottom: 28px;
   }
-
   .timer {
     line-height: 1.6;
     margin-bottom: 0;
     min-width: 280px;
   }
-
   .timer-heading {
     margin-bottom: 8px;
     font-weight: normal;
     letter-spacing: .3px;
   }
-
   .label {
     display: inline-block;
     width: 90px;
     color: #fff;
   }
-
   .val {
     color: #fff;
   }
-
   /* ROTATING TEXT BLUE ONLY */
   h1 {
     font-weight: normal;
@@ -71,7 +66,6 @@
     max-width: 760px;
     color: #007BFF;
   }
-
   .fadeout {
     position: fixed;
     inset: 0;
@@ -80,24 +74,19 @@
     pointer-events: none;
     transition: opacity 1.5s linear;
   }
-
   .fadeout.active {
     opacity: 1;
   }
 </style>
 </head>
-
 <body>
-
 <div class="wrap">
-
   <!-- HEADER -->
   <div class="title">
     Emanuel Payan |
     <a href="decade.html">Decade</a> |
     <a href="burn.html">Burn</a>
   </div>
-
   <div class="timers">
     <!-- LEFT: COUNTDOWN TIMER -->
     <div class="timer">
@@ -111,7 +100,6 @@
       <br>
       <div id="target"></div>
     </div>
-
     <!-- RIGHT: ELAPSED TIMER -->
     <div class="timer" style="text-align:right;">
       <div class="timer-heading">ELAPSED</div>
@@ -125,21 +113,15 @@
       <div id="start"></div>
     </div>
   </div>
-
   <!-- ROTATING TEXT -->
   <h1 id="line">The world is yours.</h1>
-
 </div>
-
 <div id="fade" class="fadeout"></div>
-
 <script>
 (() => {
-
   /* DATES */
   const TARGET = new Date('2036-01-01T00:00:00');
-  const START  = new Date('2026-01-22T22:30:00');
-
+  const START = new Date('2026-01-22T22:30:00');
   /* COUNTDOWN DOM */
   const t = {
     y: document.getElementById('y'),
@@ -150,7 +132,6 @@
     s: document.getElementById('s'),
     target: document.getElementById('target')
   };
-
   /* ELAPSED DOM */
   const e = {
     y: document.getElementById('ey'),
@@ -161,7 +142,6 @@
     s: document.getElementById('es'),
     start: document.getElementById('start')
   };
-
   function fmt(dt){
     return dt.getFullYear() + '-' +
       String(dt.getMonth()+1).padStart(2,'0') + '-' +
@@ -170,51 +150,40 @@
       String(dt.getMinutes()).padStart(2,'0') + ':' +
       String(dt.getSeconds()).padStart(2,'0');
   }
-
   function diffForward(from, to) {
     if (to <= from) return {y:0, mo:0, d:0, h:0, mi:0, s:0};
-
     let c = new Date(from), y = 0, mo = 0;
     const addY = d => new Date(d.getFullYear()+1, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
     const addM = d => new Date(d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
-
     while (addY(c) <= to) { c = addY(c); y++; }
     while (addM(c) <= to) { c = addM(c); mo++; }
-
     let s = Math.floor((to - c) / 1000);
     const d = Math.floor(s / 86400); s %= 86400;
     const h = Math.floor(s / 3600); s %= 3600;
     const mi = Math.floor(s / 60); s %= 60;
-
     return {y, mo, d, h, mi, s};
   }
-
   function tickTimers() {
     const now = new Date();
-
     const c = diffForward(now, TARGET);
-    t.y.textContent  = c.y;
+    t.y.textContent = c.y;
     t.mo.textContent = c.mo;
-    t.d.textContent  = c.d;
-    t.h.textContent  = c.h;
+    t.d.textContent = c.d;
+    t.h.textContent = c.h;
     t.mi.textContent = c.mi;
-    t.s.textContent  = c.s;
-
+    t.s.textContent = c.s;
     const a = diffForward(START, now);
-    e.y.textContent  = a.y;
+    e.y.textContent = a.y;
     e.mo.textContent = a.mo;
-    e.d.textContent  = a.d;
-    e.h.textContent  = a.h;
+    e.d.textContent = a.d;
+    e.h.textContent = a.h;
     e.mi.textContent = a.mi;
-    e.s.textContent  = a.s;
+    e.s.textContent = a.s;
   }
-
   t.target.textContent = 'TARGET: ' + fmt(TARGET);
-  e.start.textContent  = 'START:  ' + fmt(START);
-
+  e.start.textContent = 'START: ' + fmt(START);
   tickTimers();
   setInterval(tickTimers, 1000);
-
   const lineEl = document.getElementById('line');
   const msgs = [
 `The world is yours.`,
@@ -312,11 +281,9 @@
 `Force all outcomes.`,
 `What is the next constraint?`
   ];
-
   const FINAL_LINE = 'Just Win.';
   const FADE_IN = 600, FADE_OUT = 600, HOLD = 1100;
   const wait = ms => new Promise(r => setTimeout(r, ms));
-
   async function show(text) {
     lineEl.style.opacity = 0;
     lineEl.textContent = text;
@@ -326,7 +293,6 @@
     lineEl.style.opacity = 0;
     await wait(FADE_OUT);
   }
-
   function shuffle(a) {
     const arr = a.slice();
     for (let i = arr.length - 1; i > 0; i--) {
@@ -335,7 +301,6 @@
     }
     return arr;
   }
-
   (async function run() {
     for (const m of shuffle(msgs)) await show(m);
     const fade = document.getElementById('fade');
@@ -346,9 +311,7 @@
     lineEl.textContent = FINAL_LINE;
     fade.classList.remove('active');
   })();
-
 })();
 </script>
-
 </body>
 </html>
