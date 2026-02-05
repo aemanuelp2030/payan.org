@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emanuel Payan | They've gone to plaid</title>
+<style>
+  html, body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
+    font-size: 15px;
+  }
+  .wrap { padding: 20px; max-width: 980px; }
+  .title { margin-bottom: 22px; font-weight: normal; letter-spacing: .5px; }
+  .title a { color: #fff; text-decoration: none; }
+  h1 { font-weight: normal; font-size: 18px; letter-spacing: .5px; margin: 26px 0 12px; }
+  .plaid { font-size: 24px; color: #ff0; margin: 20px 0 30px; text-align: center; letter-spacing: 2px; }
+  h2 { font-weight: normal; font-size: 16px; letter-spacing: .5px; margin: 24px 0 8px; }
+  .year { border-top: 1px solid #222; padding-top: 16px; margin-top: 22px; }
+  .label { display: inline-block; width: 100px; color: #aaa; }
+  .status { margin-top: 6px; color: #777; }
+  .countdown { margin-top: 6px; color: #777; }
+  .age { margin-bottom: 20px; color: #777; }
+  .end { margin-top: 30px; padding-top: 16px; border-top: 1px solid #222; font-weight: normal; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">
+    <a href="index.html">Emanuel Payan</a> |
+    <a href="decade.html">Decade</a> |
+    <a href="ludicrous.html">Ludicrous</a> |
+    <a href="burn.html">Burn</a>
+  </div>
+  <h1>Plaid Plan</h1>
+  <div class="plaid">They've gone to plaid!</div>
+  <p style="color:#666;font-size:14px;margin-bottom:20px;">Galpin cash blast → NYC team nuke → brokerage domination → $1B stacked. Plaid: Elon on crack — burn x100, negative margins warp, force $1B in 3 years nigga. I am God.</p>
+  <div class="age">Age: <span id="age-display"></span></div>
+
+  <!-- YEAR 1 -->
+  <div class="year">
+    <h2>Year 1 (Feb 2026 – Jan 2027)</h2>
+    <div>$500k / year</div>
+    <div><span class="label">Skill</span>Car Sales · Volume Prospecting · Closing</div>
+    <div><span class="label">Objective</span>Dominate Galpin Ford, stack cash velocity, proof — burn for output</div>
+    <div><span class="label">Place</span>Los Angeles (Galpin North Hills)</div>
+    <div class="status">Current</div>
+  </div>
+
+  <!-- YEAR 2 -->
+  <div class="year">
+    <h2>Year 2 (Jan 2027 – Jan 2028)</h2>
+    <div>$100M / year</div>
+    <div><span class="label">Skill</span>NYC Real Estate · Contracts · Negotiation · Brokerage Ops</div>
+    <div><span class="label">Objective</span>Join team Jan 22, force high-volume deals, stack experience, launch brokerage — warp speed, debt x20</div>
+    <div><span class="label">Place</span>New York City</div>
+    <div class="status">Upcoming</div>
+    <div class="countdown" id="countdown-year2"></div>
+  </div>
+
+  <!-- YEAR 3 -->
+  <div class="year">
+    <h2>Year 3 (Jan 2028 – Jan 2029)</h2>
+    <div>$1B stacked</div>
+    <div><span class="label">Skill</span>Recruiting · Acquisitions · Scaling · Capital Allocation</div>
+    <div><span class="label">Objective</span>Buy/merge ops, multi-state platform, own only — force billions, stack $1B nigga</div>
+    <div><span class="label">Place</span>Nationwide</div>
+    <div class="status">Upcoming</div>
+    <div class="countdown" id="countdown-year3"></div>
+  </div>
+
+  <div class="end">
+    Volume × Leverage × Burn = $1B
+  </div>
+</div>
+<script>
+  function formatTime(diff) {
+    if (diff <= 0) return 'Started';
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    const ms = Math.floor(diff % 1000);
+    return `${days}d ${hours}h ${minutes}min ${seconds}s ${ms}ms`;
+  }
+
+  function updateAll() {
+    const now = new Date();
+    const birthDate = new Date(2006, 6, 10, 21, 12, 0);
+    let diff = now - birthDate;
+    const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+    diff %= (1000 * 60 * 60 * 24 * 365.25);
+    const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30.4167));
+    diff %= (1000 * 60 * 60 * 24 * 30.4167);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    diff %= (1000 * 60 * 60 * 24);
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    diff %= (1000 * 60 * 60);
+    const minutes = Math.floor(diff / (1000 * 60));
+    diff %= (1000 * 60);
+    const seconds = Math.floor(diff / 1000);
+    const ms = diff % 1000;
+    document.getElementById('age-display').innerHTML = `${years}y ${months}m ${days}d ${hours}h ${minutes}min ${seconds}s ${ms}ms`;
+
+    const targets = {
+      'year2': new Date(2027, 0, 22, 0, 0, 0),
+      'year3': new Date(2028, 0, 22, 0, 0, 0)
+    };
+    for (const key in targets) {
+      const cdiff = targets[key] - now;
+      document.getElementById(`countdown-${key}`).innerHTML = `Countdown: ${formatTime(cdiff)}`;
+    }
+  }
+  setInterval(updateAll, 10);
+</script>
+</body>
+</html>
