@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/arete</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        h1 { color: #333; }
+        section { margin-bottom: 20px; padding: 10px; background: white; border-radius: 5px; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>/arete: Core Goals, Broken to Atoms</h1>
+    
+    <section>
+        <h2>Target: $500,000 Income — Year 1</h2>
+        <ul>
+            <li>$41,667/month</li>
+            <li>30 units/month (Tier 6, 22%)</li>
+            <li>80% new, 20% used</li>
+            <li>Avg FE gross/copy: $4,000</li>
+            <li>Avg reserve: $500</li>
+            <li>Avg F&I: $1,000</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Math Breakdown</h2>
+        <ul>
+            <li>Per-unit: $3,600</li>
+            <li>Volume bonus: $5,000</li>
+            <li>Front: $19,800</li>
+            <li>Reserve: $3,300</li>
+            <li>F&I: $2,100</li>
+            <li>Total: $33,800 (base) + enhancements ~$4,000 = ~$37,800; scale gross/units up</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>300 Rule: Daily Activity</h2>
+        <ul>
+            <li>100 calls</li>
+            <li>100 texts</li>
+            <li>100 emails</li>
+            <li>Total: 300 touches/day</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Commitment</h2>
+        <p>30 units/month, $4k+ gross/copy. Bend reality. Track daily.</p>
+    </section>
+</body>
+</html>
