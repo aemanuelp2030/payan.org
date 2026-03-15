@@ -47,9 +47,15 @@
     margin-top: 12px;
     color: #4CBB17;
   }
-  .timer {
+  .timers-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
     margin-top: 28px;
+  }
+  .timer {
     line-height: 1.6;
+    min-width: 280px;
   }
   .timer-heading {
     margin-bottom: 8px;
@@ -78,52 +84,83 @@
     <div class="tier"><span class="label">COMMISSION TIER</span>: 10%</div>
   </div>
 
-  <!-- MONTH TIMER -->
-  <div class="timer">
-    <div class="timer-heading">TIME LEFT THIS MONTH</div>
-    <div><span class="label">DAYS</span>: <span class="val" id="md">0</span></div>
-    <div><span class="label">HOURS</span>: <span class="val" id="mh">0</span></div>
-    <div><span class="label">MINUTES</span>: <span class="val" id="mmi">0</span></div>
-    <div><span class="label">SECONDS</span>: <span class="val" id="ms">0</span></div>
+  <!-- TIMERS ROW -->
+  <div class="timers-row">
+    <!-- TIME LEFT -->
+    <div class="timer">
+      <div class="timer-heading">TIME LEFT THIS MONTH</div>
+      <div><span class="label">DAYS</span>: <span class="val" id="md">0</span></div>
+      <div><span class="label">HOURS</span>: <span class="val" id="mh">0</span></div>
+      <div><span class="label">MINUTES</span>: <span class="val" id="mmi">0</span></div>
+      <div><span class="label">SECONDS</span>: <span class="val" id="ms">0</span></div>
+    </div>
+
+    <!-- TIME WASTED -->
+    <div class="timer" style="text-align:right;">
+      <div class="timer-heading">TIME WASTED THIS MONTH</div>
+      <div><span class="label">DAYS</span>: <span class="val" id="wd">0</span></div>
+      <div><span class="label">HOURS</span>: <span class="val" id="wh">0</span></div>
+      <div><span class="label">MINUTES</span>: <span class="val" id="wmi">0</span></div>
+      <div><span class="label">SECONDS</span>: <span class="val" id="ws">0</span></div>
+    </div>
   </div>
 
 </div>
 
 <script>
-  // MONTH-END COUNTDOWN
-  function updateMonthTimer() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
-    const diff = endOfMonth - now;
+// MONTH-END COUNTDOWN (TIME LEFT)
+function updateTimeLeft() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  const diff = endOfMonth - now;
 
-    if (diff <= 0) {
-      document.getElementById('md').textContent = '0';
-      document.getElementById('mh').textContent = '0';
-      document.getElementById('mmi').textContent = '0';
-      document.getElementById('ms').textContent = '0';
-      return;
-    }
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    document.getElementById('md').textContent = days;
-    document.getElementById('mh').textContent = hours;
-    document.getElementById('mmi').textContent = minutes;
-    document.getElementById('ms').textContent = seconds;
+  if (diff <= 0) {
+    document.getElementById('md').textContent = '0';
+    document.getElementById('mh').textContent = '0';
+    document.getElementById('mmi').textContent = '0';
+    document.getElementById('ms').textContent = '0';
+    return;
   }
 
-  updateMonthTimer();
-  setInterval(updateMonthTimer, 1000);
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-  // Hardcode real numbers here when ready
-  // document.getElementById('cars-mtd').textContent = '47';
-  // document.getElementById('gross-unit').textContent = '4812';
-  // document.getElementById('gross-mtd').textContent = '226164';
+  document.getElementById('md').textContent = days;
+  document.getElementById('mh').textContent = hours;
+  document.getElementById('mmi').textContent = minutes;
+  document.getElementById('ms').textContent = seconds;
+}
+
+// TIME WASTED (ELAPSED THIS MONTH)
+function updateTimeWasted() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+  const diff = now - startOfMonth;
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('wd').textContent = days;
+  document.getElementById('wh').textContent = hours;
+  document.getElementById('wmi').textContent = minutes;
+  document.getElementById('ws').textContent = seconds;
+}
+
+function updateTimers() {
+  updateTimeLeft();
+  updateTimeWasted();
+}
+
+updateTimers();
+setInterval(updateTimers, 1000);
 </script>
 </body>
 </html>
