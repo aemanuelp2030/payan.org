@@ -62,6 +62,9 @@
     font-weight: normal;
     letter-spacing: .3px;
   }
+  .wasted .val {
+    color: #8B0000; /* blood red for wasted numbers only */
+  }
 </style>
 </head>
 <body>
@@ -86,22 +89,22 @@
 
   <!-- TIMERS ROW -->
   <div class="timers-row">
-    <!-- TIME LEFT -->
+    <!-- TIME WASTED (LEFT) -->
+    <div class="timer wasted">
+      <div class="timer-heading">TIME WASTED THIS MONTH</div>
+      <div><span class="label">DAYS</span>: <span class="val" id="wd">0</span></div>
+      <div><span class="label">HOURS</span>: <span class="val" id="wh">0</span></div>
+      <div><span class="label">MINUTES</span>: <span class="val" id="wmi">0</span></div>
+      <div><span class="label">SECONDS</span>: <span class="val" id="ws">0</span></div>
+    </div>
+
+    <!-- TIME LEFT (RIGHT) -->
     <div class="timer">
       <div class="timer-heading">TIME LEFT THIS MONTH</div>
       <div><span class="label">DAYS</span>: <span class="val" id="md">0</span></div>
       <div><span class="label">HOURS</span>: <span class="val" id="mh">0</span></div>
       <div><span class="label">MINUTES</span>: <span class="val" id="mmi">0</span></div>
       <div><span class="label">SECONDS</span>: <span class="val" id="ms">0</span></div>
-    </div>
-
-    <!-- TIME WASTED -->
-    <div class="timer" style="text-align:right;">
-      <div class="timer-heading">TIME WASTED THIS MONTH</div>
-      <div><span class="label">DAYS</span>: <span class="val" id="wd">0</span></div>
-      <div><span class="label">HOURS</span>: <span class="val" id="wh">0</span></div>
-      <div><span class="label">MINUTES</span>: <span class="val" id="wmi">0</span></div>
-      <div><span class="label">SECONDS</span>: <span class="val" id="ws">0</span></div>
     </div>
   </div>
 
