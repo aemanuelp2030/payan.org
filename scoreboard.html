@@ -31,8 +31,9 @@
     text-decoration: none;
   }
   .metrics {
-    line-height: 1.6;
+    line-height: 1.5;
     max-width: 400px;
+    margin-bottom: 16px;
   }
   .label {
     display: inline-block;
@@ -44,33 +45,32 @@
     font-weight: bold;
   }
   .tier {
-    margin-top: 12px;
+    margin-top: 8px;
     color: #4CBB17;
   }
   .timers {
-    margin-top: 20px;
+    margin-top: 12px;
     display: flex;
     justify-content: space-between;
-    gap: 40px;
-    max-width: 600px;
+    gap: 60px;
+    max-width: 620px;
   }
   .timer {
-    line-height: 1.6;
+    line-height: 1.5;
     min-width: 260px;
   }
   .timer-heading {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-weight: normal;
     letter-spacing: .3px;
   }
-  .red .val {
+  .wasted .val {
     color: #EE4B2B;
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <!-- HEADER -->
   <div class="title">
     Emanuel Payan |
     <a href="/">Home</a> |
@@ -79,7 +79,6 @@
     <a href="scoreboard.html">Scoreboard</a>
   </div>
 
-  <!-- BOARD METRICS -->
   <div class="metrics">
     <div class="timer-heading">BOARD</div>
     <div><span class="label">CARS SOLD MTD</span>: <span class="val" id="cars-mtd">5.5</span></div>
@@ -88,10 +87,8 @@
     <div class="tier"><span class="label">COMMISSION TIER</span>: 10%</div>
   </div>
 
-  <!-- TIMERS MOVED UP -->
   <div class="timers">
-    <!-- TIME WASTED LEFT -->
-    <div class="timer red">
+    <div class="timer wasted">
       <div class="timer-heading">TIME WASTED THIS MONTH</div>
       <div><span class="label">DAYS</span>: <span class="val" id="wd">0</span></div>
       <div><span class="label">HOURS</span>: <span class="val" id="wh">0</span></div>
@@ -99,8 +96,7 @@
       <div><span class="label">SECONDS</span>: <span class="val" id="ws">0</span></div>
     </div>
 
-    <!-- TIME LEFT RIGHT -->
-    <div class="timer red">
+    <div class="timer">
       <div class="timer-heading">TIME LEFT THIS MONTH</div>
       <div><span class="label">DAYS</span>: <span class="val" id="md">0</span></div>
       <div><span class="label">HOURS</span>: <span class="val" id="mh">0</span></div>
@@ -111,7 +107,7 @@
 </div>
 
 <script>
-// TIME LEFT THIS MONTH
+// TIME LEFT
 function updateTimeLeft() {
   const now = new Date();
   const year = now.getFullYear();
@@ -135,7 +131,7 @@ function updateTimeLeft() {
   document.getElementById('ms').textContent = seconds;
 }
 
-// TIME WASTED THIS MONTH
+// TIME WASTED
 function updateTimeWasted() {
   const now = new Date();
   const year = now.getFullYear();
