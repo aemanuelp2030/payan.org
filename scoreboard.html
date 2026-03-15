@@ -20,9 +20,6 @@
   }
   .wrap {
     padding: 20px;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
   }
   .title {
     margin-bottom: 14px;
@@ -36,7 +33,6 @@
   .metrics {
     line-height: 1.6;
     max-width: 400px;
-    margin-bottom: 40px;
   }
   .label {
     display: inline-block;
@@ -51,27 +47,24 @@
     margin-top: 12px;
     color: #4CBB17;
   }
-  .timers-row {
+  .timers {
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-top: auto; /* pushes timers to bottom if content short */
-    padding-top: 40px;
+    gap: 40px;
+    max-width: 600px;
   }
   .timer {
     line-height: 1.6;
-    min-width: 280px;
+    min-width: 260px;
   }
   .timer-heading {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: normal;
     letter-spacing: .3px;
   }
-  .wasted .val {
-    color: #EE4B2B; /* your blood red for wasted numbers only */
-  }
-  .time-left .val {
-    color: #EE4B2B; /* same blood red for time left numbers */
+  .red .val {
+    color: #EE4B2B;
   }
 </style>
 </head>
@@ -86,7 +79,7 @@
     <a href="scoreboard.html">Scoreboard</a>
   </div>
 
-  <!-- WAR METRICS -->
+  <!-- BOARD METRICS -->
   <div class="metrics">
     <div class="timer-heading">BOARD</div>
     <div><span class="label">CARS SOLD MTD</span>: <span class="val" id="cars-mtd">5.5</span></div>
@@ -95,10 +88,10 @@
     <div class="tier"><span class="label">COMMISSION TIER</span>: 10%</div>
   </div>
 
-  <!-- TIMERS ROW - full width, left & right edges -->
-  <div class="timers-row">
-    <!-- TIME WASTED (LEFT EDGE) -->
-    <div class="timer wasted">
+  <!-- TIMERS MOVED UP -->
+  <div class="timers">
+    <!-- TIME WASTED LEFT -->
+    <div class="timer red">
       <div class="timer-heading">TIME WASTED THIS MONTH</div>
       <div><span class="label">DAYS</span>: <span class="val" id="wd">0</span></div>
       <div><span class="label">HOURS</span>: <span class="val" id="wh">0</span></div>
@@ -106,8 +99,8 @@
       <div><span class="label">SECONDS</span>: <span class="val" id="ws">0</span></div>
     </div>
 
-    <!-- TIME LEFT (RIGHT EDGE) -->
-    <div class="timer time-left">
+    <!-- TIME LEFT RIGHT -->
+    <div class="timer red">
       <div class="timer-heading">TIME LEFT THIS MONTH</div>
       <div><span class="label">DAYS</span>: <span class="val" id="md">0</span></div>
       <div><span class="label">HOURS</span>: <span class="val" id="mh">0</span></div>
@@ -118,7 +111,7 @@
 </div>
 
 <script>
-// MONTH-END COUNTDOWN (TIME LEFT)
+// TIME LEFT THIS MONTH
 function updateTimeLeft() {
   const now = new Date();
   const year = now.getFullYear();
@@ -142,7 +135,7 @@ function updateTimeLeft() {
   document.getElementById('ms').textContent = seconds;
 }
 
-// TIME WASTED (ELAPSED THIS MONTH)
+// TIME WASTED THIS MONTH
 function updateTimeWasted() {
   const now = new Date();
   const year = now.getFullYear();
