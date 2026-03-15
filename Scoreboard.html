@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payan.org Scoreboard</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 800px;
+    }
+    h1 {
+      font-size: 4rem;
+      margin: 0 0 20px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ff0044, #ff9900);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 1.5rem;
+      color: #888;
+      margin-bottom: 60px;
+    }
+    .scoreboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+    .card {
+      background: #111;
+      border: 2px solid #333;
+      border-radius: 12px;
+      padding: 30px;
+      transition: all 0.3s;
+    }
+    .card:hover {
+      border-color: #ff0044;
+      transform: translateY(-8px);
+    }
+    .label {
+      font-size: 1.2rem;
+      color: #aaa;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .value {
+      font-size: 4.5rem;
+      font-weight: bold;
+      color: #fff;
+      margin: 0;
+      line-height: 1;
+    }
+    .avg {
+      font-size: 2.8rem;
+    }
+    .mt {
+      font-size: 3.2rem;
+      color: #00ff9d;
+    }
+    footer {
+      margin-top: 80px;
+      font-size: 1rem;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PAYAN WAR BOARD</h1>
+    <div class="subtitle">Crums until $1B. Force it.</div>
+
+    <div class="scoreboard">
+      <div class="card">
+        <div class="label">Cars Sold MTD</div>
+        <div class="value" id="cars-mtd">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Avg Gross Profit/Unit</div>
+        <div class="value avg" id="gross-unit">$0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">MTD Gross $ Generated</div>
+        <div class="value mt" id="gross-mtd">$0</div>
+      </div>
+    </div>
+
+    <footer>Updated: March 15, 2026 | Galpin Ford Domination</footer>
+  </div>
+
+  <!-- For now static. Later hook JS + backend to auto-pull your numbers -->
+  <script>
+    // Placeholder - replace with real data fetch when you build backend
+    // Example:
+    // document.getElementById('cars-mtd').textContent = '47';
+    // document.getElementById('gross-unit').textContent = '$4,812';
+    // document.getElementById('gross-mtd').textContent = '$226,164';
+  </script>
+</body>
+</html>
