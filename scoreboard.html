@@ -49,12 +49,13 @@
   .history-entry {
     border-left: 2px solid #333; padding: 8px 12px;
     margin-bottom: 10px; cursor: pointer; transition: border-color .15s;
+    text-transform: uppercase;
   }
   .history-entry:hover { border-color: #4CBB17; }
   .history-entry.active { border-color: #fff; }
   .entry-month { color: #aaa; font-size: 13px; margin-bottom: 2px; }
   .entry-stats span { margin-right: 18px; }
-  .entry-tier { color: #4CBB17; font-size: 13px; }
+  .entry-tier { color: #4CBB17; }
   .viewing-banner { display: none; margin-bottom: 10px; color: #aaa; font-size: 13px; }
   .viewing-banner.show { display: block; }
   .back-link { color: #4CBB17; cursor: pointer; text-decoration: underline; margin-left: 8px; }
@@ -72,7 +73,7 @@
 
   <div class="viewing-banner" id="viewing-banner">
     VIEWING: <span id="viewing-label"></span>
-    <span class="back-link" onclick="clearView()">← back to live</span>
+    <span class="back-link" onclick="clearView()">← BACK TO LIVE</span>
   </div>
 
   <div class="metrics">
@@ -80,7 +81,7 @@
     <div><span class="label">CARS SOLD MTD</span>: <span class="val" id="cars-mtd">1.5</span></div>
     <div><span class="label">AVG GROSS /UNIT</span>: <span class="val" id="gross-unit">$2,500</span></div>
     <div><span class="label">MTD GROSS $</span>: <span class="val" id="gross-mtd">$5,000</span></div>
-    <div class="tier" id="tier-row"><span class="label">COMMISSION TIER (12 units)</span>: 12%</div>
+    <div class="tier" id="tier-row"><span class="label">COMMISSION TIER (12 UNITS)</span>: 12%</div>
   </div>
 
   <div class="timers">
@@ -105,11 +106,11 @@
     <div class="history-heading">MONTH HISTORY</div>
     <div class="save-row">
       <span>SAVE MTD AS:</span>
-      <input type="text" id="save-month" placeholder="Apr 25" maxlength="10" style="width:65px">
-      <input type="number" id="save-cars" placeholder="units" min="0" step="0.5" style="width:65px">
-      <input type="text" id="save-avg" placeholder="avg $" style="width:75px">
-      <input type="text" id="save-gross" placeholder="gross $" style="width:85px">
-      <input type="text" id="save-tier" placeholder="tier%" style="width:50px">
+      <input type="text" id="save-month" placeholder="APR 25" maxlength="10" style="width:65px">
+      <input type="number" id="save-cars" placeholder="UNITS" min="0" step="0.5" style="width:65px">
+      <input type="text" id="save-avg" placeholder="AVG $" style="width:75px">
+      <input type="text" id="save-gross" placeholder="GROSS $" style="width:85px">
+      <input type="text" id="save-tier" placeholder="TIER%" style="width:50px">
       <button onclick="saveMonth()">LOCK IN</button>
     </div>
     <div class="history-list" id="history-list"></div>
@@ -126,25 +127,24 @@ function saveHistory(arr) { localStorage.setItem('payan_history', JSON.stringify
 
 function seedMarch() {
   const h = getHistory();
-  // Remove any bad March entry and re-seed correctly
-  const idx = h.findIndex(e => e.month === 'Mar 31');
-  if (idx !== -1) h.splice(idx, 1);
-  h.unshift({ month:'Mar 31', cars:'12.5', avg:'$4,806', gross:'$60,075', tier:'12%', tierUnits:'12', saved:Date.now() });
-  saveHistory(h);
+  // Clear any old March entries
+  const filtered = h.filter(e => e.month !== 'MAR 25' && e.month !== 'Mar 25' && e.month !== 'MAR 31');
+  filtered.unshift({ month:'MAR 31', cars:'12.5', avg:'$4,806', gross:'$60,075', tier:'12%', saved:Date.now() });
+  saveHistory(filtered);
 }
 
-function setBoard(cars, avg, gross, tier, tierUnits) {
+function setBoard(cars, avg, gross, tier) {
   document.getElementById('cars-mtd').textContent = cars;
   document.getElementById('gross-unit').textContent = avg;
   document.getElementById('gross-mtd').textContent = gross;
   document.getElementById('tier-row').innerHTML =
-    '<span class="label">COMMISSION TIER (' + (tierUnits||'12') + ' units)</span>: ' + tier;
+    '<span class="label">COMMISSION TIER (12 UNITS)</span>: ' + tier;
 }
 
 function clearView() {
   document.getElementById('viewing-banner').classList.remove('show');
   document.querySelectorAll('.history-entry').forEach(e => e.classList.remove('active'));
-  setBoard(LIVE.cars, LIVE.avg, LIVE.gross, LIVE.tier, LIVE.tierUnits);
+  setBoard(LIVE.cars, LIVE.avg, LIVE.gross, LIVE.tier);
 }
 
 function viewEntry(idx) {
@@ -155,18 +155,18 @@ function viewEntry(idx) {
   document.getElementById('viewing-label').textContent = e.month;
   document.querySelectorAll('.history-entry').forEach(el => el.classList.remove('active'));
   document.getElementById('entry-' + idx).classList.add('active');
-  setBoard(e.cars, e.avg, e.gross, e.tier, e.tierUnits || '12');
+  setBoard(e.cars, e.avg, e.gross, e.tier);
 }
 
 function saveMonth() {
-  const month = document.getElementById('save-month').value.trim();
+  const month = document.getElementById('save-month').value.trim().toUpperCase();
   const cars  = document.getElementById('save-cars').value.trim();
   const avg   = document.getElementById('save-avg').value.trim();
   const gross = document.getElementById('save-gross').value.trim();
   const tier  = document.getElementById('save-tier').value.trim();
-  if (!month) { alert('Enter a month label'); return; }
+  if (!month) { alert('ENTER A MONTH LABEL'); return; }
   const h = getHistory();
-  h.unshift({ month, cars, avg, gross, tier, tierUnits:'12', saved:Date.now() });
+  h.unshift({ month, cars, avg, gross, tier, saved:Date.now() });
   saveHistory(h);
   ['save-month','save-cars','save-avg','save-gross','save-tier'].forEach(id => document.getElementById(id).value = '');
   renderHistory();
@@ -175,14 +175,14 @@ function saveMonth() {
 function renderHistory() {
   const h = getHistory();
   const el = document.getElementById('history-list');
-  if (!h.length) { el.innerHTML = '<span style="color:#444">No months saved yet.</span>'; return; }
+  if (!h.length) { el.innerHTML = '<span style="color:#444">NO MONTHS SAVED YET.</span>'; return; }
   el.innerHTML = h.map((e, i) =>
     '<div class="history-entry" id="entry-' + i + '" onclick="viewEntry(' + i + ')">' +
       '<div class="entry-month">' + e.month + '</div>' +
       '<div class="entry-stats">' +
-        '<span>' + (e.cars||'—') + ' units</span>' +
-        '<span>avg ' + (e.avg||'—') + '</span>' +
-        '<span>gross ' + (e.gross||'—') + '</span>' +
+        '<span>' + (e.cars||'—') + ' UNITS</span>' +
+        '<span>AVG ' + (e.avg||'—') + '</span>' +
+        '<span>GROSS ' + (e.gross||'—') + '</span>' +
         '<span class="entry-tier">' + (e.tier||'—') + '</span>' +
       '</div>' +
     '</div>'
