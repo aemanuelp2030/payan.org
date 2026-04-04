@@ -18,36 +18,25 @@
     font-family: Chicago, Geneva, Monaco, "Courier New", monospace;
     font-size: 15px;
   }
-  .wrap {
-    padding: 20px;
-  }
+  .wrap { padding: 20px; }
   .title {
     margin-bottom: 14px;
     font-weight: normal;
     letter-spacing: .5px;
   }
-  .title a {
-    color: #fff;
-    text-decoration: none;
-  }
+  .title a { color: #fff; text-decoration: none; }
   .metrics {
     line-height: 1.5;
-    max-width: 400px;
+    max-width: 420px;
     margin-bottom: 16px;
   }
   .label {
     display: inline-block;
-    width: 140px;
+    width: 200px;
     color: #fff;
   }
-  .val {
-    color: #fff;
-    font-weight: bold;
-  }
-  .tier {
-    margin-top: 8px;
-    color: #4CBB17;
-  }
+  .val { color: #fff; font-weight: bold; }
+  .tier { margin-top: 8px; color: #4CBB17; }
   .timers {
     margin-top: 12px;
     display: flex;
@@ -55,18 +44,70 @@
     gap: 60px;
     max-width: 620px;
   }
-  .timer {
-    line-height: 1.5;
-    min-width: 260px;
-  }
+  .timer { line-height: 1.5; min-width: 260px; }
   .timer-heading {
     margin-bottom: 4px;
     font-weight: normal;
     letter-spacing: .3px;
   }
-  .wasted .val {
-    color: #EE4B2B;
+  .wasted .val { color: #EE4B2B; }
+
+  .history-section { margin-top: 30px; max-width: 620px; }
+  .history-section hr { border: none; border-top: 1px solid #333; margin: 12px 0; }
+  .history-heading {
+    font-weight: normal;
+    letter-spacing: .3px;
+    margin-bottom: 10px;
+    color: #aaa;
   }
+  .save-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .save-row input {
+    background: #111;
+    border: 1px solid #444;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+  .save-row input::placeholder { color: #555; }
+  .save-row button {
+    background: #000;
+    border: 1px solid #4CBB17;
+    color: #4CBB17;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 12px;
+    cursor: pointer;
+    letter-spacing: .3px;
+  }
+  .save-row button:hover { background: #4CBB17; color: #000; }
+  .del-btn {
+    background: #000;
+    border: 1px solid #EE4B2B;
+    color: #EE4B2B;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 2px 8px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .del-btn:hover { background: #EE4B2B; color: #000; }
+  .history-list { line-height: 1.6; }
+  .history-entry {
+    border-left: 2px solid #333;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .history-entry:hover { border-color: #4CBB17; }
+  .history-entry.active { border-color: #fff; }
+  .entry-month { color: #aaa; font-size: 13px; margin-bottom: 2px; }
+  .entry-stats span { margin-right: 18px; }
+  .entry-tier { color: #4CBB17; font-size: 13px; }
+  .viewing-banner { display: none; margin-bottom: 10px; color: #aaa; font-size: 13px; }
+  .viewing-banner.show { display: block; }
+  .back-link { color: #4CBB17; cursor: pointer; text-decoration: underline; margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -79,12 +120,17 @@
     <a href="scoreboard.html">Scoreboard</a>
   </div>
 
+  <div class="viewing-banner" id="viewing-banner">
+    VIEWING: <span id="viewing-label"></span>
+    <span class="back-link" onclick="clearView()">← back to live</span>
+  </div>
+
   <div class="metrics">
     <div class="timer-heading">BOARD</div>
-    <div><span class="label">CARS SOLD MTD</span>: <span class="val" id="cars-mtd">9</span></div>
-    <div><span class="label">AVG GROSS /UNIT</span>: <span class="val" id="gross-unit">$4<780</span></div>
-    <div><span class="label">MTD GROSS $</span>: <span class="val" id="gross-mtd">$43<020</span></div>
-    <div class="tier"><span class="label">COMMISSION TIER (12 units)</span>: 12%</div>
+    <div><span class="label">CARS SOLD MTD</span>: <span class="val" id="cars-mtd">1.5</span></div>
+    <div><span class="label">AVG GROSS /UNIT</span>: <span class="val" id="gross-unit">$2,500</span></div>
+    <div><span class="label">MTD GROSS $</span>: <span class="val" id="gross-mtd">$5,000</span></div>
+    <div class="tier" id="tier-row"><span class="label">COMMISSION TIER (12 units)</span>: 12%</div>
   </div>
 
   <div class="timers">
@@ -95,7 +141,6 @@
       <div><span class="label">MINUTES</span>: <span class="val" id="wmi">0</span></div>
       <div><span class="label">SECONDS</span>: <span class="val" id="ws">0</span></div>
     </div>
-
     <div class="timer">
       <div class="timer-heading">TIME LEFT THIS MONTH</div>
       <div><span class="label">DAYS</span>: <span class="val" id="md">0</span></div>
@@ -104,57 +149,128 @@
       <div><span class="label">SECONDS</span>: <span class="val" id="ms">0</span></div>
     </div>
   </div>
+
+  <div class="history-section">
+    <hr>
+    <div class="history-heading">MONTH HISTORY</div>
+    <div class="save-row">
+      <span>SAVE MTD AS:</span>
+      <input type="text" id="save-month" placeholder="Apr 25" maxlength="10" style="width:65px">
+      <input type="number" id="save-cars" placeholder="units" min="0" step="0.5" style="width:65px">
+      <input type="text" id="save-avg" placeholder="avg $" style="width:75px">
+      <input type="text" id="save-gross" placeholder="gross $" style="width:85px">
+      <input type="text" id="save-tier" placeholder="tier%" style="width:50px">
+      <button onclick="saveMonth()">LOCK IN</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
 </div>
 
 <script>
-// TIME LEFT
+const LIVE = { cars:'1.5', avg:'$2,500', gross:'$5,000', tier:'12%', tierUnits:'12' };
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('payan_history') || '[]'); } catch { return []; }
+}
+function saveHistory(arr) { localStorage.setItem('payan_history', JSON.stringify(arr)); }
+
+function seedMarch() {
+  const h = getHistory();
+  if (h.some(e => e.month === 'Mar 25')) return;
+  h.unshift({ month:'Mar 25', cars:'12.5', avg:'$4,806', gross:'$60,075', tier:'12%', tierUnits:'12', saved:Date.now() });
+  saveHistory(h);
+}
+
+function setBoard(cars, avg, gross, tier, tierUnits) {
+  document.getElementById('cars-mtd').textContent = cars;
+  document.getElementById('gross-unit').textContent = avg;
+  document.getElementById('gross-mtd').textContent = gross;
+  document.getElementById('tier-row').innerHTML =
+    '<span class="label">COMMISSION TIER (' + (tierUnits||'12') + ' units)</span>: ' + tier;
+}
+
+function clearView() {
+  document.getElementById('viewing-banner').classList.remove('show');
+  document.querySelectorAll('.history-entry').forEach(e => e.classList.remove('active'));
+  setBoard(LIVE.cars, LIVE.avg, LIVE.gross, LIVE.tier, LIVE.tierUnits);
+}
+
+function viewEntry(idx) {
+  const h = getHistory();
+  const e = h[idx];
+  if (!e) return;
+  document.getElementById('viewing-banner').classList.add('show');
+  document.getElementById('viewing-label').textContent = e.month;
+  document.querySelectorAll('.history-entry').forEach(el => el.classList.remove('active'));
+  document.getElementById('entry-' + idx).classList.add('active');
+  setBoard(e.cars, e.avg, e.gross, e.tier, e.tierUnits || '12');
+}
+
+function saveMonth() {
+  const month = document.getElementById('save-month').value.trim();
+  const cars  = document.getElementById('save-cars').value.trim();
+  const avg   = document.getElementById('save-avg').value.trim();
+  const gross = document.getElementById('save-gross').value.trim();
+  const tier  = document.getElementById('save-tier').value.trim();
+  if (!month) { alert('Enter a month label'); return; }
+  const h = getHistory();
+  h.unshift({ month, cars, avg, gross, tier, tierUnits:'12', saved:Date.now() });
+  saveHistory(h);
+  ['save-month','save-cars','save-avg','save-gross','save-tier'].forEach(id => document.getElementById(id).value = '');
+  renderHistory();
+}
+
+function deleteEntry(idx) {
+  if (!confirm('Delete this entry?')) return;
+  const h = getHistory();
+  h.splice(idx, 1);
+  saveHistory(h);
+  clearView();
+  renderHistory();
+}
+
+function renderHistory() {
+  const h = getHistory();
+  const el = document.getElementById('history-list');
+  if (!h.length) { el.innerHTML = '<span style="color:#444">No months saved yet.</span>'; return; }
+  el.innerHTML = h.map((e, i) =>
+    '<div class="history-entry" id="entry-' + i + '" onclick="viewEntry(' + i + ')">' +
+      '<div class="entry-month">' + e.month + '</div>' +
+      '<div class="entry-stats">' +
+        '<span>' + (e.cars||'—') + ' units</span>' +
+        '<span>avg ' + (e.avg||'—') + '</span>' +
+        '<span>gross ' + (e.gross||'—') + '</span>' +
+        '<span class="entry-tier">' + (e.tier||'—') + '</span>' +
+      '</div>' +
+      '<button class="del-btn" onclick="event.stopPropagation();deleteEntry(' + i + ')">DELETE</button>' +
+    '</div>'
+  ).join('');
+}
+
 function updateTimeLeft() {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
-  const diff = endOfMonth - now;
-  if (diff <= 0) {
-    document.getElementById('md').textContent = '0';
-    document.getElementById('mh').textContent = '0';
-    document.getElementById('mmi').textContent = '0';
-    document.getElementById('ms').textContent = '0';
-    return;
-  }
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  document.getElementById('md').textContent = days;
-  document.getElementById('mh').textContent = hours;
-  document.getElementById('mmi').textContent = minutes;
-  document.getElementById('ms').textContent = seconds;
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 0, 23, 59, 59, 999);
+  const d = end - now;
+  if (d <= 0) { ['md','mh','mmi','ms'].forEach(id => document.getElementById(id).textContent='0'); return; }
+  document.getElementById('md').textContent  = Math.floor(d/86400000);
+  document.getElementById('mh').textContent  = Math.floor((d%86400000)/3600000);
+  document.getElementById('mmi').textContent = Math.floor((d%3600000)/60000);
+  document.getElementById('ms').textContent  = Math.floor((d%60000)/1000);
 }
-
-// TIME WASTED
 function updateTimeWasted() {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
-  const diff = now - startOfMonth;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  document.getElementById('wd').textContent = days;
-  document.getElementById('wh').textContent = hours;
-  document.getElementById('wmi').textContent = minutes;
-  document.getElementById('ws').textContent = seconds;
+  const d = now - new Date(now.getFullYear(), now.getMonth(), 1);
+  document.getElementById('wd').textContent  = Math.floor(d/86400000);
+  document.getElementById('wh').textContent  = Math.floor((d%86400000)/3600000);
+  document.getElementById('wmi').textContent = Math.floor((d%3600000)/60000);
+  document.getElementById('ws').textContent  = Math.floor((d%60000)/1000);
 }
 
-function updateTimers() {
-  updateTimeLeft();
-  updateTimeWasted();
-}
-
-updateTimers();
-setInterval(updateTimers, 1000);
+function tick() { updateTimeLeft(); updateTimeWasted(); }
+tick();
+setInterval(tick, 1000);
+seedMarch();
+renderHistory();
 </script>
 </body>
 </html>
