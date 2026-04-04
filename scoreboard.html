@@ -19,86 +19,36 @@
     font-size: 15px;
   }
   .wrap { padding: 20px; }
-  .title {
-    margin-bottom: 14px;
-    font-weight: normal;
-    letter-spacing: .5px;
-  }
+  .title { margin-bottom: 14px; font-weight: normal; letter-spacing: .5px; }
   .title a { color: #fff; text-decoration: none; }
-  .metrics {
-    line-height: 1.5;
-    max-width: 420px;
-    margin-bottom: 16px;
-  }
-  .label {
-    display: inline-block;
-    width: 200px;
-    color: #fff;
-  }
+  .metrics { line-height: 1.5; max-width: 420px; margin-bottom: 16px; }
+  .label { display: inline-block; width: 200px; color: #fff; }
   .val { color: #fff; font-weight: bold; }
   .tier { margin-top: 8px; color: #4CBB17; }
-  .timers {
-    margin-top: 12px;
-    display: flex;
-    justify-content: space-between;
-    gap: 60px;
-    max-width: 620px;
-  }
+  .timers { margin-top: 12px; display: flex; gap: 60px; max-width: 620px; }
   .timer { line-height: 1.5; min-width: 260px; }
-  .timer-heading {
-    margin-bottom: 4px;
-    font-weight: normal;
-    letter-spacing: .3px;
-  }
+  .timer-heading { margin-bottom: 4px; font-weight: normal; letter-spacing: .3px; }
   .wasted .val { color: #EE4B2B; }
 
   .history-section { margin-top: 30px; max-width: 620px; }
   .history-section hr { border: none; border-top: 1px solid #333; margin: 12px 0; }
-  .history-heading {
-    font-weight: normal;
-    letter-spacing: .3px;
-    margin-bottom: 10px;
-    color: #aaa;
-  }
+  .history-heading { font-weight: normal; letter-spacing: .3px; margin-bottom: 10px; color: #aaa; }
   .save-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
   .save-row input {
-    background: #111;
-    border: 1px solid #444;
-    color: #fff;
-    font-family: inherit;
-    font-size: 14px;
-    padding: 4px 8px;
+    background: #111; border: 1px solid #444; color: #fff;
+    font-family: inherit; font-size: 14px; padding: 4px 8px;
   }
   .save-row input::placeholder { color: #555; }
   .save-row button {
-    background: #000;
-    border: 1px solid #4CBB17;
-    color: #4CBB17;
-    font-family: inherit;
-    font-size: 13px;
-    padding: 4px 12px;
-    cursor: pointer;
-    letter-spacing: .3px;
+    background: #000; border: 1px solid #4CBB17; color: #4CBB17;
+    font-family: inherit; font-size: 13px; padding: 4px 12px;
+    cursor: pointer; letter-spacing: .3px;
   }
   .save-row button:hover { background: #4CBB17; color: #000; }
-  .del-btn {
-    background: #000;
-    border: 1px solid #EE4B2B;
-    color: #EE4B2B;
-    font-family: inherit;
-    font-size: 12px;
-    padding: 2px 8px;
-    cursor: pointer;
-    margin-top: 4px;
-  }
-  .del-btn:hover { background: #EE4B2B; color: #000; }
   .history-list { line-height: 1.6; }
   .history-entry {
-    border-left: 2px solid #333;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: border-color .15s;
+    border-left: 2px solid #333; padding: 8px 12px;
+    margin-bottom: 10px; cursor: pointer; transition: border-color .15s;
   }
   .history-entry:hover { border-color: #4CBB17; }
   .history-entry.active { border-color: #fff; }
@@ -176,8 +126,10 @@ function saveHistory(arr) { localStorage.setItem('payan_history', JSON.stringify
 
 function seedMarch() {
   const h = getHistory();
-  if (h.some(e => e.month === 'Mar 25')) return;
-  h.unshift({ month:'Mar 25', cars:'12.5', avg:'$4,806', gross:'$60,075', tier:'12%', tierUnits:'12', saved:Date.now() });
+  // Remove any bad March entry and re-seed correctly
+  const idx = h.findIndex(e => e.month === 'Mar 31');
+  if (idx !== -1) h.splice(idx, 1);
+  h.unshift({ month:'Mar 31', cars:'12.5', avg:'$4,806', gross:'$60,075', tier:'12%', tierUnits:'12', saved:Date.now() });
   saveHistory(h);
 }
 
@@ -220,15 +172,6 @@ function saveMonth() {
   renderHistory();
 }
 
-function deleteEntry(idx) {
-  if (!confirm('Delete this entry?')) return;
-  const h = getHistory();
-  h.splice(idx, 1);
-  saveHistory(h);
-  clearView();
-  renderHistory();
-}
-
 function renderHistory() {
   const h = getHistory();
   const el = document.getElementById('history-list');
@@ -242,7 +185,6 @@ function renderHistory() {
         '<span>gross ' + (e.gross||'—') + '</span>' +
         '<span class="entry-tier">' + (e.tier||'—') + '</span>' +
       '</div>' +
-      '<button class="del-btn" onclick="event.stopPropagation();deleteEntry(' + i + ')">DELETE</button>' +
     '</div>'
   ).join('');
 }
