@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAILY SYSTEM — payan.org</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .header {
+    border-bottom: 3px solid #fff;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .header .subtitle {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    letter-spacing: 2px;
+  }
+
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    border: 1px solid #333;
+    padding: 12px 16px;
+  }
+
+  .date-nav button {
+    background: none;
+    border: 1px solid #555;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .date-nav button:hover { background: #222; }
+  .date-nav button:disabled { color: #333; border-color: #222; cursor: default; }
+  .date-nav button:disabled:hover { background: none; }
+
+  .date-nav .current-date {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .habit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 32px;
+  }
+
+  .habit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border: 1px solid #222;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .habit-item:hover { border-color: #444; }
+
+  .habit-item.done {
+    background: #0a0a0a;
+    border-color: #1a3a1a;
+  }
+
+  .habit-item .habit-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .habit-item .habit-time {
+    font-size: 11px;
+    color: #555;
+    min-width: 60px;
+  }
+
+  .habit-item.done .habit-time { color: #2a5a2a; }
+
+  .habit-item .habit-name {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .habit-item.done .habit-name {
+    color: #4a8a4a;
+    text-decoration: line-through;
+    text-decoration-color: #2a5a2a;
+  }
+
+  .habit-item .check {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .habit-item.done .check {
+    border-color: #4a8a4a;
+    color: #4a8a4a;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 32px;
+  }
+
+  .stat-box {
+    border: 1px solid #222;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-box .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+  }
+
+  .stat-box .stat-label {
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 2px;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .stat-box.perfect .stat-value { color: #4a8a4a; }
+  .stat-box.miss .stat-value { color: #8a2a2a; }
+
+  .streak-bar {
+    border: 1px solid #222;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+
+  .streak-bar .streak-label {
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .streak-bar .streak-visual {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .streak-bar .streak-day {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #222;
+    font-size: 0;
+  }
+
+  .streak-bar .streak-day.perfect { background: #4a8a4a; border-color: #4a8a4a; }
+  .streak-bar .streak-day.partial { background: #8a8a2a; border-color: #8a8a2a; }
+  .streak-bar .streak-day.miss { background: #8a2a2a; border-color: #8a2a2a; }
+  .streak-bar .streak-day.future { border-color: #111; }
+  .streak-bar .streak-day.today { border-color: #fff; }
+
+  .history-section {
+    border-top: 3px solid #fff;
+    padding-top: 16px;
+  }
+
+  .history-section h2 {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #111;
+    font-size: 12px;
+  }
+
+  .history-row .history-date { color: #555; min-width: 100px; }
+  .history-row .history-score { font-weight: 700; }
+  .history-row .history-score.perfect { color: #4a8a4a; }
+  .history-row .history-score.partial { color: #8a8a2a; }
+  .history-row .history-score.miss { color: #8a2a2a; }
+
+  .history-row .history-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .history-row .dot {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #333;
+  }
+
+  .history-row .dot.done { background: #4a8a4a; border-color: #4a8a4a; }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #222;
+    text-align: center;
+  }
+
+  .footer a {
+    color: #555;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-decoration: none;
+  }
+
+  .footer a:hover { color: #fff; }
+
+  .export-btn {
+    background: none;
+    border: 1px solid #333;
+    color: #555;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 24px;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .export-btn:hover { border-color: #fff; color: #fff; }
+
+  @media (max-width: 480px) {
+    .header h1 { font-size: 20px; }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    .stat-box .stat-value { font-size: 22px; }
+    .habit-item { padding: 14px 12px; }
+    .habit-item .habit-name { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const HABITS = [
+  { id: 'wakeup', name: 'WAKE UP', time: '4:30A' },
+  { id: 'gym', name: 'GYM', time: '5:00A' },
+  { id: 'prep', name: 'LIST PREP', time: '7:45A' },
+  { id: 'dials', name: '100 DIALS', time: '9:00A' },
+  { id: 'texts', name: '100 TEXTS', time: '9:00A' },
+  { id: 'emails', name: '100 EMAILS', time: '9:00A' },
+];
+
+const STORAGE_KEY = 'payan_habits';
+
+function getDateKey(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function todayStr() {
+  const now = new Date();
+  return getDateKey(now);
+}
+
+function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  const date = new Date(y, m - 1, d);
+  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  return `${days[date.getDay()]} ${months[date.getMonth()]} ${parseInt(d)}`;
+}
+
+function addDays(dateStr, n) {
+  const [y, m, d] = dateStr.split('-');
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() + n);
+  return getDateKey(date);
+}
+
+function getCompletionCount(data, dateStr) {
+  const day = data[dateStr] || {};
+  return HABITS.filter(h => day[h.id]).length;
+}
+
+function getStreak(data) {
+  let streak = 0;
+  let check = todayStr();
+  const todayComplete = getCompletionCount(data, check) === HABITS.length;
+  if (!todayComplete) check = addDays(check, -1);
+  
+  while (getCompletionCount(data, check) === HABITS.length) {
+    streak++;
+    check = addDays(check, -1);
+  }
+  return streak;
+}
+
+function getPerfectDays(data) {
+  return Object.keys(data).filter(d => getCompletionCount(data, d) === HABITS.length).length;
+}
+
+let currentDate = todayStr();
+
+function render() {
+  const data = loadData();
+  const dayData = data[currentDate] || {};
+  const isToday = currentDate === todayStr();
+  const isFuture = currentDate > todayStr();
+  const completed = HABITS.filter(h => dayData[h.id]).length;
+  const streak = getStreak(data);
+  const perfectDays = getPerfectDays(data);
+  const totalDays = Object.keys(data).length || 1;
+
+  // Build streak visual (last 30 days)
+  let streakDots = '';
+  for (let i = 29; i >= 0; i--) {
+    const d = addDays(todayStr(), -i);
+    const count = getCompletionCount(data, d);
+    let cls = 'miss';
+    if (d > todayStr()) cls = 'future';
+    else if (d === todayStr()) cls = 'today';
+    if (count === HABITS.length) cls += ' perfect';
+    else if (count > 0) cls += ' partial';
+    else if (d <= todayStr()) cls += ' miss';
+    streakDots += `<div class="streak-day ${cls}" title="${formatDate(d)}: ${count}/${HABITS.length}"></div>`;
+  }
+
+  // Build history (last 7 days excluding current)
+  let historyRows = '';
+  for (let i = 1; i <= 7; i++) {
+    const d = addDays(todayStr(), -i);
+    const count = getCompletionCount(data, d);
+    const scoreClass = count === HABITS.length ? 'perfect' : count > 0 ? 'partial' : 'miss';
+    let dots = '';
+    HABITS.forEach(h => {
+      const done = (data[d] || {})[h.id];
+      dots += `<div class="dot ${done ? 'done' : ''}"></div>`;
+    });
+    historyRows += `
+      <div class="history-row">
+        <span class="history-date">${formatDate(d)}</span>
+        <div class="history-dots">${dots}</div>
+        <span class="history-score ${scoreClass}">${count}/${HABITS.length}</span>
+      </div>`;
+  }
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="header">
+      <h1>DAILY SYSTEM</h1>
+      <div class="subtitle">PAYAN.ORG — TRACK OR DIE</div>
+    </div>
+
+    <div class="date-nav">
+      <button onclick="navigate(-1)">◄</button>
+      <span class="current-date">${formatDate(currentDate)}${isToday ? ' — TODAY' : ''}</span>
+      <button onclick="navigate(1)" ${isFuture || isToday ? 'disabled' : ''}>►</button>
+    </div>
+
+    <div class="habit-list">
+      ${HABITS.map(h => {
+        const done = dayData[h.id] || false;
+        return `
+          <div class="habit-item ${done ? 'done' : ''}" onclick="toggle('${h.id}')">
+            <div class="habit-info">
+              <span class="habit-time">${h.time}</span>
+              <span class="habit-name">${h.name}</span>
+            </div>
+            <div class="check">${done ? '✓' : ''}</div>
+          </div>`;
+      }).join('')}
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box ${completed === HABITS.length ? 'perfect' : ''}">
+        <div class="stat-value">${completed}/${HABITS.length}</div>
+        <div class="stat-label">TODAY</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">${streak}</div>
+        <div class="stat-label">STREAK</div>
+      </div>
+      <div class="stat-box perfect">
+        <div class="stat-value">${perfectDays}</div>
+        <div class="stat-label">PERFECT DAYS</div>
+      </div>
+    </div>
+
+    <div class="streak-bar">
+      <div class="streak-label">LAST 30 DAYS</div>
+      <div class="streak-visual">${streakDots}</div>
+    </div>
+
+    <div class="history-section">
+      <h2>HISTORY</h2>
+      ${historyRows}
+    </div>
+
+    <button class="export-btn" onclick="exportData()">EXPORT JSON</button>
+
+    <div class="footer">
+      <a href="#">PAYAN.ORG</a>
+    </div>
+  `;
+}
+
+function toggle(habitId) {
+  const data = loadData();
+  if (!data[currentDate]) data[currentDate] = {};
+  data[currentDate][habitId] = !data[currentDate][habitId];
+  saveData(data);
+  render();
+}
+
+function navigate(dir) {
+  const next = addDays(currentDate, dir);
+  if (next > todayStr()) return;
+  currentDate = next;
+  render();
+}
+
+function exportData() {
+  const data = loadData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `payan_habits_${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+render();
+</script>
+</body>
+</html>
