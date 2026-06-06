@@ -57,12 +57,13 @@
   header.site{position:sticky;top:0;z-index:50;background:rgba(251,247,240,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
   .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;}
   .logo{line-height:1;text-align:left;}
-  .logo-img{height:56px;width:auto;display:none;}
+  .logo-img{height:60px;width:auto;display:none;mix-blend-mode:multiply;}
   .logo.has-img .logo-img{display:block;}
   .logo.has-img .logo-text{display:none;}
-  .logo .l1{font-family:'Playfair Display',serif;font-weight:800;font-size:1.35rem;letter-spacing:3px;color:var(--black);}
-  .logo .l2{font-family:'Great Vibes',cursive;color:var(--maroon);font-size:1.5rem;margin:-6px 0;display:block;line-height:1;}
-  .logo small{display:block;font-size:.55rem;letter-spacing:3px;color:var(--grey);margin-top:2px;}
+  .logo-text{display:block;line-height:.86;}
+  .logo .l1{font-family:'Playfair Display',serif;font-weight:800;font-size:1.4rem;letter-spacing:2px;color:var(--black);display:block;}
+  .logo .l2{font-family:'Great Vibes',cursive;color:var(--maroon);font-size:2rem;margin:-13px 0 -11px;display:block;line-height:1;position:relative;z-index:2;padding-left:14px;}
+  .logo small{display:block;font-size:.52rem;letter-spacing:3px;color:var(--grey);margin-top:4px;}
   nav.links{display:flex;gap:26px;align-items:center;}
   nav.links a{font-size:.9rem;font-weight:500;color:var(--ink);transition:.2s;}
   nav.links a:hover{color:var(--maroon);}
@@ -108,24 +109,26 @@
   /* ---------- Packages ---------- */
   #packages{background:var(--cream);}
   .pkg-head .sub{text-align:center;color:var(--grey);margin-top:6px;}
-  .pkg-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:0 26px;align-items:stretch;margin-top:44px;}
-  .pkg{border-radius:20px;padding:38px 30px;box-shadow:var(--shadow);position:relative;display:flex;flex-direction:column;}
+  .pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch;margin-top:44px;}
+  .pkg{border-radius:20px;padding:34px 26px;box-shadow:var(--shadow);position:relative;display:flex;flex-direction:column;}
   .pkg.classic{background:#fff;border:1px solid var(--line);}
+  .pkg.custom{background:#fff;border:1px solid var(--line);border-top:4px solid var(--maroon);}
   .pkg.luxury{background:linear-gradient(160deg,#f7ede6,#efe1da);color:var(--ink);border:1px solid #e7d3c9;}
   .pkg h3{font-size:2rem;font-weight:800;letter-spacing:1px;line-height:1;text-align:center;}
   .pkg .pk-label{text-align:center;letter-spacing:5px;font-size:.8rem;font-weight:600;margin:2px 0 16px;}
   .pkg.classic h3{color:var(--maroon);} .pkg.classic .pk-label{color:var(--ink);}
+  .pkg.custom h3{color:var(--maroon);} .pkg.custom .pk-label{color:var(--ink);}
   .pkg.luxury h3{color:var(--maroon-dark);} .pkg.luxury .pk-label{color:var(--ink);}
   .price{text-align:center;border-radius:10px;padding:14px;font-family:'Playfair Display',serif;font-weight:800;font-size:2.6rem;color:#fff;margin-bottom:8px;}
   .classic .price{background:var(--maroon);}
   .luxury .price{background:linear-gradient(135deg,#cf5a52,#a31e22);color:#fff;}
   .pkg .slogan{text-align:center;font-size:.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:22px;font-weight:600;}
-  .classic .slogan{color:var(--maroon);} .luxury .slogan{color:var(--maroon-dark);}
+  .classic .slogan,.custom .slogan{color:var(--maroon);} .luxury .slogan{color:var(--maroon-dark);}
   .pkg ul{list-style:none;flex:1;}
   .pkg li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:.94rem;border-bottom:1px dashed rgba(150,130,98,.18);}
   .luxury li{border-bottom-color:rgba(150,130,98,.25);}
   .pkg li .ck{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;color:#fff;margin-top:2px;}
-  .classic li .ck{background:var(--maroon);} .luxury li .ck{background:var(--maroon-dark);color:#fff;}
+  .classic li .ck,.custom li .ck{background:var(--maroon);} .luxury li .ck{background:var(--maroon-dark);color:#fff;}
   .pkg .pk-btn{margin-top:24px;text-align:center;}
   .or-badge{align-self:center;display:grid;place-items:center;width:62px;height:62px;border-radius:50%;background:var(--maroon);color:#fff;font-family:'Playfair Display',serif;font-weight:700;font-size:1.1rem;box-shadow:var(--shadow);}
   .pkg-note{text-align:center;margin-top:26px;color:var(--grey);font-size:.9rem;}
@@ -151,11 +154,14 @@
   /* ---------- Gallery ---------- */
   .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px;}
   .gitem{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;box-shadow:var(--shadow);}
-  .gitem img{width:100%;height:100%;object-fit:cover;transition:.5s;}
+  .gitem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:.5s;z-index:1;}
   .gitem:hover img{transform:scale(1.07);}
-  .gitem .ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:14px;color:#fff;font-size:.82rem;letter-spacing:.5px;background:linear-gradient(135deg,#cf5a52,#a31e22);}
+  .gitem .ph{position:absolute;inset:0;z-index:0;display:grid;place-items:center;text-align:center;padding:14px;color:#fff;font-size:.82rem;letter-spacing:.5px;background:linear-gradient(135deg,#cf5a52,#a31e22);}
   .gitem .ph small{display:block;opacity:.7;font-size:.7rem;margin-top:6px;}
-  .gitem .cap{position:absolute;left:0;right:0;bottom:0;padding:12px 14px;color:#fff;font-size:.82rem;font-weight:600;letter-spacing:.5px;background:linear-gradient(transparent,rgba(0,0,0,.75));}
+  .gitem .cap{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:12px 14px;color:#fff;font-size:.82rem;font-weight:600;letter-spacing:.5px;background:linear-gradient(transparent,rgba(0,0,0,.75));}
+  .ig-cta{text-align:center;margin-top:34px;}
+  .ig-cta .btn svg{flex:0 0 auto;}
+  .ig-handle{margin-top:10px;color:var(--maroon);font-weight:600;letter-spacing:.5px;}
 
   /* ---------- How it works ---------- */
   #how{background:var(--cream);}
@@ -166,13 +172,15 @@
   .step p{font-size:.86rem;color:var(--grey);}
 
   /* ---------- About / family ---------- */
-  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center;}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:start;}
   .about-img{border-radius:20px;overflow:hidden;box-shadow:var(--shadow);aspect-ratio:4/5;position:relative;}
-  .about-img img{width:100%;height:100%;object-fit:cover;}
-  .about-img .ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;background:linear-gradient(135deg,#cf5a52,#a31e22);padding:20px;font-size:.85rem;}
+  .about-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
+  .about-img .ph{position:absolute;inset:0;z-index:0;display:grid;place-items:center;text-align:center;color:#fff;background:linear-gradient(135deg,#cf5a52,#a31e22);padding:20px;font-size:.85rem;}
   .about-txt .eyebrow{text-align:left;}
   .about-txt h2{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;color:var(--black);line-height:1.15;}
   .about-txt p{color:var(--grey);margin-top:16px;}
+  .about-txt .signoff{color:var(--ink);font-size:1.05rem;margin-top:18px;}
+  .about-txt .signoff .script{font-size:1.9rem;line-height:1.1;}
   .about-txt .vals{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
   .about-txt .vals span{background:var(--cream);border:1px solid var(--line);border-radius:50px;padding:8px 16px;font-size:.82rem;font-weight:600;color:var(--maroon);}
 
@@ -193,6 +201,35 @@
   form .btn{margin-top:22px;width:100%;justify-content:center;}
   form option{color:#000;}
 
+  /* ---------- Booking / Calendar ---------- */
+  #book{background:var(--cream);}
+  .book-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;margin-top:40px;align-items:start;}
+  .bookcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow);}
+  .bk-h{font-size:1.25rem;color:var(--black);}
+  .bk-hint{font-size:.85rem;color:var(--grey);margin:2px 0 16px;}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .cal-head .mlabel{font-family:'Playfair Display',serif;font-weight:700;font-size:1.15rem;color:var(--black);}
+  .cal-nav{display:flex;gap:8px;}
+  .cal-nav button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--cream-2);color:var(--maroon);font-size:1.1rem;cursor:pointer;transition:.2s;}
+  .cal-nav button:hover:not(:disabled){background:var(--maroon);color:#fff;border-color:var(--maroon);}
+  .cal-nav button:disabled{opacity:.35;cursor:not-allowed;}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+  .dow span{text-align:center;font-size:.7rem;letter-spacing:.5px;color:var(--grey);font-weight:600;text-transform:uppercase;}
+  .daygrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .day{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:.92rem;cursor:pointer;border:1px solid transparent;background:var(--cream);color:var(--ink);transition:.15s;user-select:none;}
+  .day:hover:not(.disabled):not(.empty){background:var(--gold-light);border-color:var(--gold);}
+  .day.empty{background:none;cursor:default;}
+  .day.disabled{color:#c3b7ad;background:#f7f1ea;cursor:not-allowed;text-decoration:line-through;}
+  .day.today{border-color:var(--maroon);font-weight:700;}
+  .day.selected{background:var(--maroon);color:#fff;border-color:var(--maroon);font-weight:700;}
+  .legend{display:flex;gap:16px;margin-top:14px;font-size:.74rem;color:var(--grey);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend .sw{width:13px;height:13px;border-radius:4px;display:inline-block;}
+  .selbar{background:var(--cream);border:1px dashed var(--gold);border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:.95rem;color:var(--ink);}
+  .selbar b{color:var(--maroon-dark);}
+  .bk-note{font-size:.78rem;color:var(--grey);margin-top:12px;text-align:center;}
+  .bk-note a{color:var(--maroon);font-weight:600;}
+
   /* ---------- Footer ---------- */
   footer{background:var(--cream);color:var(--ink);text-align:center;padding:40px 22px;border-top:3px solid var(--maroon);}
   footer .logo{display:inline-block;margin-bottom:12px;text-align:center;}
@@ -211,6 +248,7 @@
     .pkg-grid{grid-template-columns:1fr;gap:22px;}
     .or-badge{margin:-6px auto;}
     .rentals{grid-template-columns:repeat(2,1fr);}
+    .book-grid{grid-template-columns:1fr;}
     .occ-grid{grid-template-columns:repeat(2,1fr);}
     .gallery{grid-template-columns:repeat(2,1fr);}
     .steps{grid-template-columns:1fr 1fr;}
@@ -285,7 +323,7 @@
     </div>
     <div class="tb-left">
       <a href="tel:16262576514">📞 (626) 257-6514</a>
-      <a href="https://instagram.com/partynow.rentals" target="_blank" rel="noopener">📷 @partynow.rentals</a>
+      <a href="https://instagram.com/partynow.rentals" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.62c-3.15 0-3.5.01-4.74.07-.95.04-1.46.2-1.81.34-.45.18-.78.39-1.12.73-.34.34-.55.67-.73 1.12-.14.35-.3.86-.34 1.81-.06 1.24-.07 1.59-.07 4.74s.01 3.5.07 4.74c.04.95.2 1.46.34 1.81.18.45.39.78.73 1.12.34.34.67.55 1.12.73.35.14.86.3 1.81.34 1.24.06 1.59.07 4.74.07s3.5-.01 4.74-.07c.95-.04 1.46-.2 1.81-.34.45-.18.78-.39 1.12-.73.34-.34.55-.67.73-1.12.14-.35.3-.86.34-1.81.06-1.24.07-1.59.07-4.74s-.01-3.5-.07-4.74c-.04-.95-.2-1.46-.34-1.81-.18-.45-.39-.78-.73-1.12-.34-.34-.67-.55-1.12-.73-.35-.14-.86-.3-1.81-.34-1.24-.06-1.59-.07-4.74-.07zm0 2.76a5.42 5.42 0 110 10.84 5.42 5.42 0 010-10.84zm0 1.62a3.8 3.8 0 100 7.6 3.8 3.8 0 000-7.6zm5.6-2.9a1.27 1.27 0 110 2.53 1.27 1.27 0 010-2.53z"/></svg>@partynow.rentals</a>
     </div>
   </div>
 </div>
@@ -307,11 +345,11 @@
       <a href="#rentals">Rentals</a>
       <a href="#occasions">Occasions</a>
       <a href="#gallery">Gallery</a>
-      <a href="#how">How It Works</a>
+      <a href="#book">Book</a>
       <a href="#contact">Contact</a>
     </nav>
     <div class="nav-cta">
-      <a href="booking.html" class="btn btn-maroon">Reserve Your Date</a>
+      <a href="#book" class="btn btn-maroon">Reserve Your Date</a>
       <button class="menu-toggle" id="menuBtn" aria-label="Menu">☰</button>
     </div>
   </div>
@@ -319,7 +357,7 @@
 
 <!-- HERO -->
 <section class="hero" id="top" style="padding:0;">
-  <div class="bg"><img src="images/hero.jpg" alt="" onerror="this.style.display='none'"></div>
+  <div class="bg"></div>
   <div class="overlay"></div>
   <div class="content">
     <span class="crown">★ Premium Event Rentals ★</span>
@@ -349,11 +387,39 @@
   </div>
 </div>
 
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="wrap">
+    <span class="eyebrow">Our Work</span>
+    <h2 class="sec-title">Recent <span class="script">Events</span></h2>
+    <p class="sec-intro">Real setups, delivered and styled by our family team across Southern California.</p>
+    <div class="divider"></div>
+    <div class="gallery">
+      <div class="gitem"><div class="ph">Add photo<small>images/g1.jpg</small></div><img src="images/g1.jpg" alt="Wedding ceremony with white folding chairs" onerror="this.style.display='none'"><div class="cap">Wedding Ceremonies</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g2.jpg</small></div><img src="images/g2.jpg" alt="Baby shower long table with runner and florals" onerror="this.style.display='none'"><div class="cap">Baby Showers</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g3.jpg</small></div><img src="images/g3.jpg" alt="Elegant candlelit dinner table" onerror="this.style.display='none'"><div class="cap">Elegant Dinners</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g4.jpg</small></div><img src="images/g4.jpg" alt="Poolside tables and chairs" onerror="this.style.display='none'"><div class="cap">Outdoor Gatherings</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g5.jpg</small></div><img src="images/g5.jpg" alt="Backyard reception with round tables and umbrellas" onerror="this.style.display='none'"><div class="cap">Backyard Receptions</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g6.jpg</small></div><img src="images/g6.jpg" alt="Cocktail tables and lounge setup" onerror="this.style.display='none'"><div class="cap">Cocktail Hour Setups</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g7.jpg</small></div><img src="images/g7.jpg" alt="Elegant place setting with gold flatware" onerror="this.style.display='none'"><div class="cap">Elegant Place Settings</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g8.jpg</small></div><img src="images/g8.jpg" alt="Birthday party tables with bounce house" onerror="this.style.display='none'"><div class="cap">Kids Birthday Parties</div></div>
+      <div class="gitem"><div class="ph">Add photo<small>images/g9.jpg</small></div><img src="images/g9.jpg" alt="Burgundy themed candlelit long table" onerror="this.style.display='none'"><div class="cap">Themed Celebrations</div></div>
+    </div>
+
+    <div class="ig-cta">
+      <a href="https://instagram.com/partynow.rentals" target="_blank" rel="noopener" class="btn btn-gold">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.62c-3.15 0-3.5.01-4.74.07-.95.04-1.46.2-1.81.34-.45.18-.78.39-1.12.73-.34.34-.55.67-.73 1.12-.14.35-.3.86-.34 1.81-.06 1.24-.07 1.59-.07 4.74s.01 3.5.07 4.74c.04.95.2 1.46.34 1.81.18.45.39.78.73 1.12.34.34.67.55 1.12.73.35.14.86.3 1.81.34 1.24.06 1.59.07 4.74.07s3.5-.01 4.74-.07c.95-.04 1.46-.2 1.81-.34.45-.18.78-.39 1.12-.73.34-.34.55-.67.73-1.12.14-.35.3-.86.34-1.81.06-1.24.07-1.59.07-4.74s-.01-3.5-.07-4.74c-.04-.95-.2-1.46-.34-1.81-.18-.45-.39-.78-.73-1.12-.34-.34-.67-.55-1.12-.73-.35-.14-.86-.3-1.81-.34-1.24-.06-1.59-.07-4.74-.07zm0 2.76a5.42 5.42 0 110 10.84 5.42 5.42 0 010-10.84zm0 1.62a3.8 3.8 0 100 7.6 3.8 3.8 0 000-7.6zm5.6-2.9a1.27 1.27 0 110 2.53 1.27 1.27 0 010-2.53z"/></svg>
+        Follow Us on Instagram
+      </a>
+      <p class="ig-handle">@partynow.rentals</p>
+    </div>
+  </div>
+</section>
 <!-- PACKAGES -->
 <section id="packages">
   <div class="wrap pkg-head">
     <span class="eyebrow">Simple, All-Inclusive Packages</span>
-    <h2 class="sec-title">Packages for <span class="script">25 Guests</span></h2>
+    <h2 class="sec-title">Our <span class="script">Packages</span></h2>
     <p class="sub">Delivery, professional setup &amp; pickup included in every package — request a custom quote.</p>
     <div class="divider"></div>
 
@@ -372,11 +438,8 @@
           <li><span class="ck">✓</span> Professional setup included</li>
           <li><span class="ck">✓</span> Pickup included</li>
         </ul>
-        <div class="pk-btn"><a href="booking.html?pkg=classic" class="btn btn-outline-dark">Book the Classic</a></div>
+        <div class="pk-btn"><a href="#book" class="btn btn-outline-dark" onclick="setPkg('classic')">Book the Classic</a></div>
       </div>
-
-      <!-- OR -->
-      <div class="or-badge">OR</div>
 
       <!-- LUXURY -->
       <div class="pkg luxury">
@@ -393,10 +456,92 @@
           <li><span class="ck">✓</span> 2 cocktail table linens</li>
           <li><span class="ck">✓</span> Delivery, setup &amp; pickup included</li>
         </ul>
-        <div class="pk-btn"><a href="booking.html?pkg=luxury" class="btn btn-gold">Book the Luxury</a></div>
+        <div class="pk-btn"><a href="#book" class="btn btn-gold" onclick="setPkg('luxury')">Book the Luxury</a></div>
+      </div>
+
+      <!-- CUSTOM -->
+      <div class="pkg custom">
+        <h3>CUSTOM</h3>
+        <div class="pk-label">PACKAGE</div>
+        <div class="slogan">Built Around You.</div>
+        <ul>
+          <li><span class="ck">✓</span> Any guest count — 25 to 300+</li>
+          <li><span class="ck">✓</span> Choose your tables &amp; chairs</li>
+          <li><span class="ck">✓</span> Linens, runners &amp; table decor</li>
+          <li><span class="ck">✓</span> Themed &amp; custom styled setups</li>
+          <li><span class="ck">✓</span> Cocktail tables, heaters &amp; full bar</li>
+          <li><span class="ck">✓</span> Tailored to your theme &amp; vision</li>
+          <li><span class="ck">✓</span> Delivery, setup &amp; pickup included</li>
+        </ul>
+        <div class="pk-btn"><a href="#book" class="btn btn-outline-dark" onclick="setPkg('custom')">Build My Package</a></div>
       </div>
     </div>
-    <p class="pkg-note">Need a bigger guest count or a fully custom setup? <b>We do that too</b> — just ask for a quote.</p>
+    <p class="pkg-note">Not sure which fits? <b>Pick your date below</b> and we'll help you build the perfect setup.</p>
+  </div>
+</section>
+
+<!-- BOOK / CALENDAR -->
+<section id="book">
+  <div class="wrap">
+    <span class="eyebrow">Reserve Your Date</span>
+    <h2 class="sec-title">Book Your <span class="script">Event</span></h2>
+    <p class="sec-intro">Pick an available date, tell us about your celebration, and we'll confirm right away.</p>
+    <div class="divider"></div>
+    <div class="book-grid">
+
+      <div class="bookcard">
+        <h3 class="bk-h">1. Choose your date</h3>
+        <p class="bk-hint">Tap a day to select it. Past dates are unavailable.</p>
+        <div class="cal-head">
+          <span class="mlabel" id="bk-mlabel">Month</span>
+          <div class="cal-nav">
+            <button type="button" id="bk-prev" aria-label="Previous month">‹</button>
+            <button type="button" id="bk-next" aria-label="Next month">›</button>
+          </div>
+        </div>
+        <div class="dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+        <div class="daygrid" id="bk-grid"></div>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--maroon);"></span> Selected</span>
+          <span><span class="sw" style="background:var(--cream);border:1px solid var(--gold);"></span> Available</span>
+          <span><span class="sw" style="background:#f7f1ea;"></span> Unavailable</span>
+        </div>
+      </div>
+
+      <form id="bookForm" onsubmit="return submitBooking(event)">
+        <h3 class="bk-h">2. Your details</h3>
+        <p class="bk-hint">We'll get back to you with availability &amp; a quote.</p>
+        <div class="selbar" id="bk-selbar">📅 No date selected yet — pick one on the calendar.</div>
+        <input type="hidden" id="bk-date" />
+        <label for="bk-name">Full name</label>
+        <input id="bk-name" type="text" required placeholder="First &amp; last name" />
+        <label for="bk-phone">Phone</label>
+        <input id="bk-phone" type="tel" required placeholder="(626) ___-____" />
+        <label for="bk-email">Email</label>
+        <input id="bk-email" type="email" placeholder="you@email.com" />
+        <label for="bk-type">Type of event</label>
+        <select id="bk-type">
+          <option>Wedding</option><option>Birthday</option><option>Baby Shower</option>
+          <option>Graduation</option><option>Corporate Event</option><option>Quinceañera</option><option>Other / Custom</option>
+        </select>
+        <label for="bk-pkg">Package</label>
+        <select id="bk-pkg">
+          <option>Classic Package</option>
+          <option>Luxury Package</option>
+          <option>Custom setup / a la carte</option>
+        </select>
+        <label for="bk-guests">How many guests?</label>
+        <select id="bk-guests">
+          <option>25</option><option>50</option><option>75</option><option>100</option>
+          <option>150</option><option>200</option><option>250</option><option>300</option><option>300+</option>
+        </select>
+        <label for="bk-msg">Anything else? (theme, location, add-ons)</label>
+        <textarea id="bk-msg" placeholder="Tell us about your event..."></textarea>
+        <button type="submit" class="btn btn-gold" id="bk-submit" disabled>Pick a date to continue</button>
+        <p class="bk-note">Prefer to talk? Call or text <a href="tel:16262576514">(626) 257-6514</a></p>
+      </form>
+
+    </div>
   </div>
 </section>
 
@@ -428,33 +573,16 @@
     <p class="sec-intro">From an intimate backyard party to a full wedding, we customize every detail to match your theme and vision.</p>
     <div class="divider"></div>
     <div class="occ-grid">
-      <a class="occ" href="booking.html?type=Wedding"><div class="ic">💍</div><h3>Weddings</h3><p>Elegant seating, linens &amp; styling for your big day.</p></a>
-      <a class="occ" href="booking.html?type=Birthday"><div class="ic">🎂</div><h3>Birthdays</h3><p>Themed setups kids and adults will remember.</p></a>
-      <a class="occ" href="booking.html?type=Baby Shower"><div class="ic">🍼</div><h3>Baby Showers</h3><p>Soft, beautiful tablescapes for the new arrival.</p></a>
-      <a class="occ" href="booking.html?type=Graduation"><div class="ic">🎓</div><h3>Graduations</h3><p>Celebrate the milestone in style.</p></a>
-      <a class="occ" href="booking.html?type=Corporate Event"><div class="ic">💼</div><h3>Corporate Events</h3><p>Polished, professional setups that impress.</p></a>
-      <a class="occ" href="booking.html?type=Other / Custom"><div class="ic">🎨</div><h3>Custom Themes</h3><p>Have a vision? We bring it to life, your way.</p></a>
+      <a class="occ" href="#book" onclick="setType('Wedding')"><div class="ic">💍</div><h3>Weddings</h3><p>Elegant seating, linens &amp; styling for your big day.</p></a>
+      <a class="occ" href="#book" onclick="setType('Birthday')"><div class="ic">🎂</div><h3>Birthdays</h3><p>Themed setups kids and adults will remember.</p></a>
+      <a class="occ" href="#book" onclick="setType('Baby Shower')"><div class="ic">🍼</div><h3>Baby Showers</h3><p>Soft, beautiful tablescapes for the new arrival.</p></a>
+      <a class="occ" href="#book" onclick="setType('Graduation')"><div class="ic">🎓</div><h3>Graduations</h3><p>Celebrate the milestone in style.</p></a>
+      <a class="occ" href="#book" onclick="setType('Corporate Event')"><div class="ic">💼</div><h3>Corporate Events</h3><p>Polished, professional setups that impress.</p></a>
+      <a class="occ" href="#book" onclick="setType('Other / Custom')"><div class="ic">🎨</div><h3>Custom Themes</h3><p>Have a vision? We bring it to life, your way.</p></a>
     </div>
   </div>
 </section>
 
-<!-- GALLERY -->
-<section id="gallery">
-  <div class="wrap">
-    <span class="eyebrow">Our Work</span>
-    <h2 class="sec-title">Recent <span class="script">Events</span></h2>
-    <p class="sec-intro">Real setups, delivered and styled by our family team across Southern California.</p>
-    <div class="divider"></div>
-    <div class="gallery">
-      <div class="gitem"><div class="ph">Add photo<small>images/g1.jpg</small></div><img src="images/g1.jpg" alt="Elegant candlelit dinner table" onerror="this.style.display='none'"><div class="cap">Elegant Dinner Tablescapes</div></div>
-      <div class="gitem"><div class="ph">Add photo<small>images/g2.jpg</small></div><img src="images/g2.jpg" alt="Round table with linens and chairs" onerror="this.style.display='none'"><div class="cap">Round Tables &amp; Linens</div></div>
-      <div class="gitem"><div class="ph">Add photo<small>images/g3.jpg</small></div><img src="images/g3.jpg" alt="Birthday balloon setup" onerror="this.style.display='none'"><div class="cap">Themed Birthday Setups</div></div>
-      <div class="gitem"><div class="ph">Add photo<small>images/g4.jpg</small></div><img src="images/g4.jpg" alt="Outdoor reception seating" onerror="this.style.display='none'"><div class="cap">Outdoor Receptions</div></div>
-      <div class="gitem"><div class="ph">Add photo<small>images/g5.jpg</small></div><img src="images/g5.jpg" alt="Backyard party with heaters" onerror="this.style.display='none'"><div class="cap">Backyard Parties &amp; Heaters</div></div>
-      <div class="gitem"><div class="ph">Add photo<small>images/g6.jpg</small></div><img src="images/g6.jpg" alt="Full event setup" onerror="this.style.display='none'"><div class="cap">Full-Service Setups</div></div>
-    </div>
-  </div>
-</section>
 
 <!-- HOW IT WORKS -->
 <section id="how">
@@ -479,10 +607,13 @@
       <img src="images/family.jpg" alt="The Party Now Rentals family team" onerror="this.style.display='none'">
     </div>
     <div class="about-txt">
-      <span class="eyebrow">Our Story</span>
-      <h2>Family Owned &amp; <span class="script">Operated</span></h2>
-      <p>Party Now Rentals is a family business built on a simple promise: make your celebration beautiful and completely stress-free. We treat every event like it's our own — showing up on time, setting up with care, and handling every detail so you can focus on your guests.</p>
-      <p>From weddings and birthdays to baby showers, graduations and corporate events, we bring quality rentals and warm, reliable service to families across Southern California.</p>
+      <span class="eyebrow">Meet The Sisters</span>
+      <h2>Meet Melanie &amp; <span class="script">Cathy</span></h2>
+      <p>We're Melanie and Cathy! Sisters, stay-at-home moms, and the hearts behind Party Now Rentals. We run our family owned event rental business with our little ones cheering us on every step of the way.</p>
+      <p>What started as a love for decorating birthdays and family gatherings quickly grew into a passion for helping others celebrate life's moments. Between mom life and family life, we pour our hearts into providing high quality, stylish event rentals for every occasion — from birthdays, baby showers, and graduations to weddings, corporate events, and everything in between!</p>
+      <p>At Party Now Rentals, we truly believe every celebration deserves to feel special, no matter the size. We handle the details so you can relax, soak it all in, and focus on what matters most — making sweet memories with the people you love.</p>
+      <p>Thank you so much for supporting a local, family owned business. We are so grateful. We can't wait to celebrate with you and help bring your vision to life ✨</p>
+      <p class="signoff">With so much love,<br><span class="script">Melanie &amp; Cathy</span> 💕</p>
       <div class="vals">
         <span>On-Time, Every Time</span>
         <span>Reliable &amp; Insured</span>
@@ -496,15 +627,15 @@
 <!-- CONTACT -->
 <section id="contact">
   <div class="wrap">
-    <span class="eyebrow">Let's Plan Your Event</span>
-    <h2 class="sec-title">Reserve Your <span class="script">Date</span></h2>
-    <p class="sec-intro">Call, text, or send us a message and we'll get right back to you with availability and a quote.</p>
+    <span class="eyebrow">Questions?</span>
+    <h2 class="sec-title">Get In <span class="script">Touch</span></h2>
+    <p class="sec-intro">Call, text, or send us a message and we'll get right back to you.</p>
     <div class="divider"></div>
     <div class="contact-grid">
       <div class="cinfo">
         <a class="crow" href="tel:16262576514"><span class="ic">📞</span><span><span class="k">Call or Text</span><br><span class="v">(626) 257-6514</span></span></a>
         <a class="crow" href="mailto:PNR@partynowrentalsllc.com"><span class="ic">✉️</span><span><span class="k">Email</span><br><span class="v">PNR@partynowrentalsllc.com</span></span></a>
-        <a class="crow" href="https://instagram.com/partynow.rentals" target="_blank" rel="noopener"><span class="ic">📷</span><span><span class="k">Instagram</span><br><span class="v">@partynow.rentals</span></span></a>
+        <a class="crow" href="https://instagram.com/partynow.rentals" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.62c-3.15 0-3.5.01-4.74.07-.95.04-1.46.2-1.81.34-.45.18-.78.39-1.12.73-.34.34-.55.67-.73 1.12-.14.35-.3.86-.34 1.81-.06 1.24-.07 1.59-.07 4.74s.01 3.5.07 4.74c.04.95.2 1.46.34 1.81.18.45.39.78.73 1.12.34.34.67.55 1.12.73.35.14.86.3 1.81.34 1.24.06 1.59.07 4.74.07s3.5-.01 4.74-.07c.95-.04 1.46-.2 1.81-.34.45-.18.78-.39 1.12-.73.34-.34.55-.67.73-1.12.14-.35.3-.86.34-1.81.06-1.24.07-1.59.07-4.74s-.01-3.5-.07-4.74c-.04-.95-.2-1.46-.34-1.81-.18-.45-.39-.78-.73-1.12-.34-.34-.67-.55-1.12-.73-.35-.14-.86-.3-1.81-.34-1.24-.06-1.59-.07-4.74-.07zm0 2.76a5.42 5.42 0 110 10.84 5.42 5.42 0 010-10.84zm0 1.62a3.8 3.8 0 100 7.6 3.8 3.8 0 000-7.6zm5.6-2.9a1.27 1.27 0 110 2.53 1.27 1.27 0 010-2.53z"/></svg></span><span><span class="k">Instagram</span><br><span class="v">Follow us @partynow.rentals</span></span></a>
         <div class="crow" style="border-bottom:none;"><span class="ic">📍</span><span><span class="k">Service Area</span><br><span class="v">Southern California</span></span></div>
       </div>
 
@@ -546,7 +677,7 @@
   </a>
   <div class="fnav">
     <a href="#packages">Packages</a><a href="#rentals">Rentals</a><a href="#occasions">Occasions</a>
-    <a href="#gallery">Gallery</a><a href="#how">How It Works</a><a href="#contact">Contact</a>
+    <a href="#gallery">Gallery</a><a href="#book">Book</a><a href="#contact">Contact</a>
   </div>
   <p>📞 (626) 257-6514 &nbsp;•&nbsp; ✉️ PNR@partynowrentalsllc.com &nbsp;•&nbsp; 📷 @partynow.rentals</p>
   <p class="small">We Deliver. We Set Up. You Enjoy. &nbsp;|&nbsp; Family Owned &amp; Operated &nbsp;|&nbsp; Serving Southern California</p>
@@ -591,6 +722,74 @@
     window.location.href='mailto:PNR@partynowrentalsllc.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
     return false;
   }
+
+  // preselect helpers for package / occasion buttons
+  function setPkg(p){
+    var s=document.getElementById('bk-pkg'); if(!s) return;
+    s.selectedIndex = p==='luxury'?1 : p==='custom'?2 : 0;
+  }
+  function setType(t){
+    var s=document.getElementById('bk-type'); if(!s) return;
+    for(var i=0;i<s.options.length;i++){ if(s.options[i].text.toLowerCase()===t.toLowerCase()) s.selectedIndex=i; }
+  }
+
+  // ---- Booking calendar ----
+  (function(){
+    var MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    var today=new Date(); today.setHours(0,0,0,0);
+    var view=new Date(today.getFullYear(),today.getMonth(),1);
+    var selected=null;
+    var grid=document.getElementById('bk-grid');
+    if(!grid) return;
+    function pad(n){return n<10?'0'+n:''+n;}
+    function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+    function pretty(d){return DOW[d.getDay()]+', '+MN[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
+    function render(){
+      var y=view.getFullYear(),m=view.getMonth();
+      document.getElementById('bk-mlabel').textContent=MN[m]+' '+y;
+      var first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+      grid.innerHTML='';
+      for(var i=0;i<first;i++){var e=document.createElement('div');e.className='day empty';grid.appendChild(e);}
+      for(var d=1;d<=days;d++){
+        var cell=document.createElement('div');cell.className='day';cell.textContent=d;
+        var date=new Date(y,m,d);
+        if(date.getTime()===today.getTime()) cell.classList.add('today');
+        if(date<today){ cell.classList.add('disabled'); }
+        else{ (function(date){ cell.addEventListener('click',function(){ selectDate(date); }); })(date); }
+        if(selected && iso(date)===iso(selected)) cell.classList.add('selected');
+        grid.appendChild(cell);
+      }
+      document.getElementById('bk-prev').disabled=(y===today.getFullYear() && m===today.getMonth());
+    }
+    function selectDate(date){
+      selected=date;
+      document.getElementById('bk-date').value=iso(date);
+      document.getElementById('bk-selbar').innerHTML='📅 Selected date: <b>'+pretty(date)+'</b>';
+      var b=document.getElementById('bk-submit'); b.disabled=false; b.textContent='Request This Date';
+      render();
+    }
+    document.getElementById('bk-prev').addEventListener('click',function(){ view.setMonth(view.getMonth()-1); render(); });
+    document.getElementById('bk-next').addEventListener('click',function(){ view.setMonth(view.getMonth()+1); render(); });
+    window.submitBooking=function(e){
+      e.preventDefault();
+      if(!selected){ alert('Please pick a date on the calendar first.'); return false; }
+      var g=function(id){return document.getElementById(id).value;};
+      var body=
+        'Requested Date: '+pretty(selected)+'\n'+
+        'Name: '+g('bk-name')+'\n'+
+        'Phone: '+g('bk-phone')+'\n'+
+        'Email: '+g('bk-email')+'\n'+
+        'Event Type: '+g('bk-type')+'\n'+
+        'Package: '+g('bk-pkg')+'\n'+
+        'Guests: '+g('bk-guests')+'\n\n'+
+        'Notes:\n'+g('bk-msg');
+      var subject='Booking Request — '+g('bk-type')+' on '+iso(selected)+' ('+g('bk-name')+')';
+      window.location.href='mailto:PNR@partynowrentalsllc.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+      return false;
+    };
+    render();
+  })();
 </script>
 </body>
 </html>
